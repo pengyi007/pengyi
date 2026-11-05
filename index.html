@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>编程学习笔记看板</title>
+    <title>编程学习知识库</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        // 自定义夏日绿色主题
         tailwind.config = {
             theme: {
                 extend: {
@@ -17,6 +16,20 @@
                             dark: '#16a34a',
                             deep: '#14532d',
                         }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        }
                     }
                 }
             }
@@ -24,14 +37,22 @@
     </script>
     <style type="text/tailwindcss">
         @layer utilities {
-            /* 玻璃态卡片样式，适配绿色背景 */
             .glass-card {
                 background: rgba(255, 255, 255, 0.35);
                 backdrop-filter: blur(12px);
                 border: 1px solid rgba(255, 255, 255, 0.6);
                 box-shadow: 0 4px 20px rgba(22, 163, 74, 0.12);
             }
-            /* 分类图标统一样式 */
+            .glass-sidebar {
+                background: rgba(255, 255, 255, 0.45);
+                backdrop-filter: blur(16px);
+                border-right: 1px solid rgba(255, 255, 255, 0.6);
+            }
+            .doc-modal-card {
+                background: #fafffb;
+                border: 1px solid rgba(22, 163, 74, 0.15);
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            }
             .category-icon {
                 width: 48px;
                 height: 48px;
@@ -41,146 +62,555 @@
                 justify-content: center;
                 font-size: 20px;
                 color: white;
+                flex-shrink: 0;
+            }
+            .book-card {
+                transition: all 0.3s ease;
+                cursor: pointer;
+            }
+            .book-card:hover {
+                transform: translateY(-6px);
+                box-shadow: 0 12px 24px rgba(22, 163, 74, 0.15);
+            }
+            .read-only-content {
+                user-select: text;
+                -webkit-user-select: text;
+                white-space: pre-wrap;
+                word-break: break-word;
+            }
+            .view-transition {
+                transition: opacity 0.4s ease, transform 0.4s ease;
             }
         }
     </style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-green-50 via-emerald-100 to-teal-200 p-6 md:p-10">
-    <div class="max-w-7xl mx-auto">
-        <!-- 独立看板统计模块 -->
-        <section class="glass-card rounded-2xl p-6 md:p-8 mb-8">
-            <h2 class="text-xl font-bold text-summer-deep mb-6">📊 学习数据总览</h2>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
-                <div class="text-center">
-                    <p class="text-3xl font-bold text-summer-dark mb-1">168</p>
-                    <p class="text-sm text-gray-600">总文档数</p>
+<body class="min-h-screen bg-gradient-to-br from-green-50 via-emerald-100 to-teal-200 overflow-x-hidden">
+
+    <!-- ========== 主界面（入口页） ========== -->
+    <div id="landingView" class="view-transition min-h-screen flex items-center justify-center relative overflow-hidden">
+        <div class="absolute top-20 left-20 w-72 h-72 bg-green-300/30 rounded-full blur-3xl animate-float"></div>
+        <div class="absolute bottom-20 right-20 w-96 h-96 bg-teal-300/30 rounded-full blur-3xl animate-float" style="animation-delay: 2s"></div>
+
+        <div class="relative z-10 text-center px-6 max-w-4xl mx-auto animate-fade-in">
+            <div class="mb-8">
+                <div class="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-summer to-summer-dark flex items-center justify-center text-white text-4xl shadow-lg">
+                    📚
                 </div>
-                <div class="text-center">
-                    <p class="text-3xl font-bold text-summer-dark mb-1">3</p>
-                    <p class="text-sm text-gray-600">今日新增</p>
-                </div>
-                <div class="text-center">
-                    <p class="text-3xl font-bold text-summer-dark mb-1">12</p>
-                    <p class="text-sm text-gray-600">本周更新</p>
-                </div>
-                <div class="text-center">
-                    <p class="text-3xl font-bold text-summer-dark mb-1">7</p>
-                    <p class="text-sm text-gray-600">分类总数</p>
-                </div>
+                <h1 class="text-4xl md:text-5xl font-bold text-summer-deep mb-4">编程学习知识库</h1>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                    汇聚多仓库学习笔记，只读浏览，专注沉淀<br>
+                    直连 GitHub 仓库，自动同步最新内容
+                </p>
             </div>
-            <!-- 进度条统计 -->
-            <div>
-                <div class="flex justify-between text-sm text-gray-600 mb-2">
-                    <span>整体学习进度</span>
-                    <span>68%</span>
-                </div>
-                <div class="w-full bg-white/50 rounded-full h-2.5">
-                    <div class="bg-gradient-to-r from-summer to-summer-dark h-2.5 rounded-full transition-all duration-500" style="width: 68%"></div>
-                </div>
-            </div>
-        </section>
 
-        <!-- 分类卡片区域 -->
-        <section>
-            <h2 class="text-xl font-bold text-summer-deep mb-6">📂 笔记分类</h2>
-            
-            <!-- 第一行 4 个卡片 -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                <!-- 前端开发 -->
-                <div class="glass-card rounded-2xl p-6 transition-all hover:scale-105 hover:shadow-lg">
-                    <div class="category-icon bg-blue-500 mb-4">
-                        &lt;/&gt;
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-800 mb-1">前端开发</h3>
-                    <p class="text-sm text-gray-600 mb-4">HTML、CSS、JavaScript 与框架笔记</p>
-                    <div class="flex justify-between items-end">
-                        <span class="text-sm text-gray-500">42 篇文档</span>
-                        <span class="text-xs bg-summer/30 text-summer-deep px-3 py-1 rounded-full">占比 25%</span>
-                    </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10 max-w-3xl mx-auto">
+                <div class="glass-card rounded-xl p-4">
+                    <p class="text-2xl font-bold text-summer-dark" id="totalRepoCount">-</p>
+                    <p class="text-sm text-gray-600">关联仓库</p>
                 </div>
-
-                <!-- 后端技术 -->
-                <div class="glass-card rounded-2xl p-6 transition-all hover:scale-105 hover:shadow-lg">
-                    <div class="category-icon bg-purple-500 mb-4">
-                        🖥️
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-800 mb-1">后端技术</h3>
-                    <p class="text-sm text-gray-600 mb-4">Node.js、MySQL、接口设计</p>
-                    <div class="flex justify-between items-end">
-                        <span class="text-sm text-gray-500">35 篇文档</span>
-                        <span class="text-xs bg-summer/30 text-summer-deep px-3 py-1 rounded-full">占比 21%</span>
-                    </div>
+                <div class="glass-card rounded-xl p-4">
+                    <p class="text-2xl font-bold text-summer-dark">只读</p>
+                    <p class="text-sm text-gray-600">安全模式</p>
                 </div>
-
-                <!-- 效率工具 -->
-                <div class="glass-card rounded-2xl p-6 transition-all hover:scale-105 hover:shadow-lg">
-                    <div class="category-icon bg-teal-500 mb-4">
-                        🔧
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-800 mb-1">效率工具</h3>
-                    <p class="text-sm text-gray-600 mb-4">Git、VSCode、自动化脚本</p>
-                    <div class="flex justify-between items-end">
-                        <span class="text-sm text-gray-500">30 篇文档</span>
-                        <span class="text-xs bg-summer/30 text-summer-deep px-3 py-1 rounded-full">占比 18%</span>
-                    </div>
+                <div class="glass-card rounded-xl p-4">
+                    <p class="text-2xl font-bold text-summer-dark">实时</p>
+                    <p class="text-sm text-gray-600">同步仓库</p>
                 </div>
-
-                <!-- 读书笔记 -->
-                <div class="glass-card rounded-2xl p-6 transition-all hover:scale-105 hover:shadow-lg">
-                    <div class="category-icon bg-green-600 mb-4">
-                        📖
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-800 mb-1">读书笔记</h3>
-                    <p class="text-sm text-gray-600 mb-4">编程书籍与学习摘录</p>
-                    <div class="flex justify-between items-end">
-                        <span class="text-sm text-gray-500">22 篇文档</span>
-                        <span class="text-xs bg-summer/30 text-summer-deep px-3 py-1 rounded-full">占比 13%</span>
-                    </div>
+                <div class="glass-card rounded-xl p-4">
+                    <p class="text-2xl font-bold text-summer-dark">纯前端</p>
+                    <p class="text-sm text-gray-600">无需服务端</p>
                 </div>
             </div>
 
-            <!-- 第二行 3 个卡片（居中排布） -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-                <!-- 项目笔记 -->
-                <div class="glass-card rounded-2xl p-6 transition-all hover:scale-105 hover:shadow-lg">
-                    <div class="category-icon bg-amber-600 mb-4">
-                        🔀
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-800 mb-1">项目笔记</h3>
-                    <p class="text-sm text-gray-600 mb-4">项目复盘与架构整理</p>
-                    <div class="flex justify-between items-end">
-                        <span class="text-sm text-gray-500">18 篇文档</span>
-                        <span class="text-xs bg-summer/30 text-summer-deep px-3 py-1 rounded-full">占比 11%</span>
-                    </div>
-                </div>
+            <button onclick="enterLibrary()" 
+                class="px-10 py-4 bg-gradient-to-r from-summer-dark to-emerald-700 text-white rounded-full text-lg font-medium shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
+                进入知识库 →
+            </button>
 
-                <!-- AI 笔记 -->
-                <div class="glass-card rounded-2xl p-6 transition-all hover:scale-105 hover:shadow-lg">
-                    <div class="category-icon bg-rose-500 mb-4">
-                        🤖
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-800 mb-1">AI 笔记</h3>
-                    <p class="text-sm text-gray-600 mb-4">AI 工具、Prompt 与实践</p>
-                    <div class="flex justify-between items-end">
-                        <span class="text-sm text-gray-500">14 篇文档</span>
-                        <span class="text-xs bg-summer/30 text-summer-deep px-3 py-1 rounded-full">占比 8%</span>
-                    </div>
-                </div>
-
-                <!-- 安全笔记 -->
-                <div class="glass-card rounded-2xl p-6 transition-all hover:scale-105 hover:shadow-lg">
-                    <div class="category-icon bg-blue-600 mb-4">
-                        🛡️
-                    </div>
-                    <h3 class="text-lg font-bold text-gray-800 mb-1">安全笔记</h3>
-                    <p class="text-sm text-gray-600 mb-4">网络安全与防护实践</p>
-                    <div class="flex justify-between items-end">
-                        <span class="text-sm text-gray-500">7 篇文档</span>
-                        <span class="text-xs bg-summer/30 text-summer-deep px-3 py-1 rounded-full">占比 4%</span>
-                    </div>
-                </div>
-            </div>
-        </section>
+            <p class="mt-8 text-sm text-gray-500">
+                按 ESC 可随时关闭文档弹窗
+            </p>
+        </div>
     </div>
+
+    <!-- ========== 知识库主界面 ========== -->
+    <div id="appView" class="view-transition hidden min-h-screen">
+        <!-- 顶部导航栏 -->
+        <header class="glass-card fixed top-0 left-0 right-0 z-50 h-16 px-6 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <button onclick="backToLanding()" class="w-9 h-9 rounded-lg hover:bg-white/50 flex items-center justify-center text-gray-600 transition-colors">
+                    ←
+                </button>
+                <div class="w-9 h-9 rounded-lg bg-summer-dark flex items-center justify-center text-white font-bold">
+                    📚
+                </div>
+                <h1 class="text-lg font-bold text-summer-deep">编程学习知识库</h1>
+            </div>
+            <div class="text-sm text-gray-600">只读模式 · 仅可查看不可修改</div>
+        </header>
+
+        <div class="flex pt-16 min-h-screen">
+            <!-- 左侧侧边栏 -->
+            <aside class="glass-sidebar w-64 fixed left-0 top-16 bottom-0 p-4 overflow-y-auto hidden md:block">
+                <nav class="space-y-2">
+                    <button onclick="goHome()" class="w-full text-left px-4 py-2.5 rounded-lg hover:bg-white/50 transition-colors flex items-center gap-3 text-summer-deep font-medium">
+                        <span>🏠</span> 首页看板
+                    </button>
+                    <div class="text-xs text-gray-500 px-4 mt-4 mb-2">仓库目录</div>
+                    <div id="sidebarNav" class="space-y-1">
+                        <!-- JS 动态生成侧边栏菜单 -->
+                    </div>
+                </nav>
+            </aside>
+
+            <!-- 主内容区 -->
+            <main class="flex-1 md:ml-64 p-6 md:p-8">
+                <!-- 首页看板视图 -->
+                <div id="homeView">
+                    <!-- 独立看板统计模块 -->
+                    <section class="glass-card rounded-2xl p-6 md:p-8 mb-8">
+                        <h2 class="text-xl font-bold text-summer-deep mb-6">📊 数据总览</h2>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
+                            <div class="text-center">
+                                <p class="text-3xl font-bold text-summer-dark mb-1" id="statRepoCount">-</p>
+                                <p class="text-sm text-gray-600">关联仓库</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-3xl font-bold text-summer-dark mb-1">实时</p>
+                                <p class="text-sm text-gray-600">内容同步</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-3xl font-bold text-summer-dark mb-1">GET</p>
+                                <p class="text-sm text-gray-600">只读请求</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-3xl font-bold text-summer-dark mb-1">0</p>
+                                <p class="text-sm text-gray-600">修改操作</p>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-sm text-gray-600 mb-2">
+                                <span>数据源：GitHub OpenAPI</span>
+                                <span>安全只读</span>
+                            </div>
+                            <div class="w-full bg-white/50 rounded-full h-2.5">
+                                <div class="bg-gradient-to-r from-summer to-summer-dark h-2.5 rounded-full" style="width: 100%"></div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 仓库分类入口 -->
+                    <section>
+                        <h2 class="text-xl font-bold text-summer-deep mb-6">📂 全部仓库</h2>
+                        <div id="repoCardGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            <!-- JS 动态生成仓库卡片 -->
+                        </div>
+                    </section>
+                </div>
+
+                <!-- 书架视图（仓库目录） -->
+                <div id="shelfView" class="hidden">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-3">
+                            <button onclick="goHome()" class="glass-card px-4 py-2 rounded-lg text-summer-deep hover:bg-white/50 transition-colors">
+                                ← 返回看板
+                            </button>
+                            <h2 id="categoryTitle" class="text-xl font-bold text-summer-deep"></h2>
+                        </div>
+                        <span class="text-sm text-gray-600" id="docCount"></span>
+                    </div>
+
+                    <!-- 当前路径面包屑 -->
+                    <div id="pathBreadcrumb" class="mb-4 text-sm text-gray-600 flex items-center gap-2 flex-wrap">
+                        <!-- 动态渲染路径 -->
+                    </div>
+
+                    <div id="bookGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        <!-- JS 动态渲染目录/文件 -->
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 文档详情只读弹窗 -->
+    <div id="docModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/20 backdrop-blur-sm">
+        <div class="doc-modal-card w-full max-w-4xl max-h-[85vh] rounded-2xl overflow-hidden flex flex-col">
+            <!-- 弹窗头部 -->
+            <div class="px-8 pt-8 pb-5">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <h3 id="modalTitle" class="text-xl font-bold text-summer-deep"></h3>
+                        <p id="modalMeta" class="text-sm text-gray-500 mt-2"></p>
+                    </div>
+                    <button onclick="closeModal()" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-500 flex-shrink-0 transition-colors">
+                        ✕
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 分隔线 -->
+            <div class="mx-8 h-px bg-gradient-to-r from-transparent via-green-200 to-transparent"></div>
+
+            <!-- 只读内容区 -->
+            <div id="modalContent" class="px-8 py-6 overflow-y-auto read-only-content text-gray-700 leading-8 text-base flex-1">
+                <!-- JS 动态填充 -->
+            </div>
+
+            <!-- 底部只读标识 -->
+            <div class="px-8 py-4 text-center text-xs text-gray-400 border-t border-green-50 bg-green-50/50">
+                只读模式 · 内容来自 GitHub 仓库 · 不可修改
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==============================================
+        // ========== 🔧 仓库配置区（在这里填写） ==========
+        // ==============================================
+        const REPO_CONFIG = [
+            // 示例：公开仓库直接填，无需 Token
+            {
+                key: 'frontend-notes',
+                name: '前端开发笔记',
+                desc: 'HTML、CSS、JavaScript 与框架笔记',
+                owner: 'your-github-username',  // 你的 GitHub 用户名
+                repo: 'your-frontend-repo',      // 仓库名
+                branch: 'main',                  // 分支名，main 或 master
+                rootPath: '',                    // 起始目录，空代表根目录
+                icon: '&lt;/&gt;',
+                iconBg: 'bg-blue-500'
+            },
+            {
+                key: 'backend-notes',
+                name: '后端技术笔记',
+                desc: 'Node.js、MySQL、接口设计',
+                owner: 'your-github-username',
+                repo: 'your-backend-repo',
+                branch: 'main',
+                rootPath: '',
+                icon: '🖥️',
+                iconBg: 'bg-purple-500'
+            }
+            // 继续添加更多仓库...
+        ];
+
+        // GitHub 个人访问令牌（私有仓库必填，公开仓库留空即可）
+        // ⚠️ 警告：Token 仅本地使用，不要部署到公网、不要上传到公开仓库
+        const GITHUB_TOKEN = '';
+        const API_BASE = 'https://api.github.com';
+        // ==============================================
+
+        // 当前浏览状态
+        let currentRepoKey = '';
+        let currentPath = '';
+
+        // ========== GitHub API 封装 ==========
+        async function githubRequest(url) {
+            const headers = {
+                'Accept': 'application/vnd.github.v3+json'
+            };
+            if (GITHUB_TOKEN) {
+                headers['Authorization'] = `token ${GITHUB_TOKEN}`;
+            }
+            
+            const res = await fetch(url, { headers });
+            if (!res.ok) throw new Error('请求失败：' + res.status + '，请检查仓库配置或 Token');
+            return res.json();
+        }
+
+        // 获取指定路径下的目录/文件列表
+        async function getRepoContents(repoKey, path = '') {
+            const repo = REPO_CONFIG.find(r => r.key === repoKey);
+            if (!repo) return [];
+            
+            const fullPath = path ? path : repo.rootPath;
+            const url = `${API_BASE}/repos/${repo.owner}/${repo.repo}/contents/${encodeURIComponent(fullPath)}?ref=${repo.branch}`;
+            const data = await githubRequest(url);
+            
+            // 排序：文件夹在前，文件在后
+            return data.sort((a, b) => {
+                if (a.type === 'dir' && b.type === 'file') return -1;
+                if (a.type === 'file' && b.type === 'dir') return 1;
+                return a.name.localeCompare(b.name);
+            });
+        }
+
+        // 获取单个文件内容并解码
+        async function getFileContent(repoKey, path) {
+            const repo = REPO_CONFIG.find(r => r.key === repoKey);
+            if (!repo) return '';
+            
+            const url = `${API_BASE}/repos/${repo.owner}/${repo.repo}/contents/${encodeURIComponent(path)}?ref=${repo.branch}`;
+            const data = await githubRequest(url);
+            
+            if (data.encoding === 'base64') {
+                // 兼容中文解码
+                return decodeURIComponent(escape(window.atob(data.content)));
+            }
+            return data.content || '';
+        }
+
+        // ========== 页面初始化 ==========
+        window.onload = function() {
+            renderLandingStats();
+            renderHomeRepoCards();
+            renderSidebar();
+        };
+
+        // 渲染主界面统计
+        function renderLandingStats() {
+            document.getElementById('totalRepoCount').textContent = REPO_CONFIG.length;
+            document.getElementById('statRepoCount').textContent = REPO_CONFIG.length;
+        }
+
+        // 渲染首页仓库卡片
+        function renderHomeRepoCards() {
+            const grid = document.getElementById('repoCardGrid');
+            grid.innerHTML = '';
+
+            REPO_CONFIG.forEach(repo => {
+                const card = document.createElement('div');
+                card.className = 'glass-card rounded-2xl p-6 cursor-pointer transition-all hover:scale-105 hover:shadow-lg';
+                card.innerHTML = `
+                    <div class="category-icon ${repo.iconBg} mb-4">${repo.icon}</div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-1">${repo.name}</h3>
+                    <p class="text-sm text-gray-600 mb-4">${repo.desc}</p>
+                    <div class="flex justify-between items-end">
+                        <span class="text-sm text-gray-500">GitHub 仓库</span>
+                        <span class="text-xs bg-summer/30 text-summer-deep px-3 py-1 rounded-full">只读</span>
+                    </div>
+                `;
+                card.onclick = () => openCategory(repo.key);
+                grid.appendChild(card);
+            });
+        }
+
+        // 渲染侧边栏菜单
+        function renderSidebar() {
+            const nav = document.getElementById('sidebarNav');
+            nav.innerHTML = '';
+
+            REPO_CONFIG.forEach(repo => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full text-left px-4 py-2.5 rounded-lg hover:bg-white/50 transition-colors flex items-center gap-3 text-gray-700';
+                btn.innerHTML = `
+                    <span class="w-6 h-6 rounded ${repo.iconBg} text-white text-xs flex items-center justify-center">${repo.icon}</span>
+                    ${repo.name}
+                `;
+                btn.onclick = () => openCategory(repo.key);
+                nav.appendChild(btn);
+            });
+        }
+
+        // ========== 页面切换逻辑 ==========
+        function enterLibrary() {
+            const landing = document.getElementById('landingView');
+            const app = document.getElementById('appView');
+            
+            landing.style.opacity = '0';
+            landing.style.transform = 'translateY(-10px)';
+            
+            setTimeout(() => {
+                landing.classList.add('hidden');
+                app.classList.remove('hidden');
+                requestAnimationFrame(() => {
+                    app.style.opacity = '0';
+                    app.style.transform = 'translateY(10px)';
+                    requestAnimationFrame(() => {
+                        app.style.opacity = '1';
+                        app.style.transform = 'translateY(0)';
+                    });
+                });
+            }, 300);
+        }
+
+        function backToLanding() {
+            const landing = document.getElementById('landingView');
+            const app = document.getElementById('appView');
+            
+            app.style.opacity = '0';
+            app.style.transform = 'translateY(10px)';
+            
+            setTimeout(() => {
+                app.classList.add('hidden');
+                landing.classList.remove('hidden');
+                requestAnimationFrame(() => {
+                    landing.style.opacity = '0';
+                    landing.style.transform = 'translateY(-10px)';
+                    requestAnimationFrame(() => {
+                        landing.style.opacity = '1';
+                        landing.style.transform = 'translateY(0)';
+                    });
+                });
+            }, 300);
+
+            goHome();
+            closeModal();
+        }
+
+        function goHome() {
+            document.getElementById('homeView').classList.remove('hidden');
+            document.getElementById('shelfView').classList.add('hidden');
+            closeModal();
+        }
+
+        // ========== 书架浏览逻辑 ==========
+        function openCategory(repoKey) {
+            const repo = REPO_CONFIG.find(r => r.key === repoKey);
+            if (!repo) return;
+
+            currentRepoKey = repoKey;
+            currentPath = repo.rootPath || '';
+
+            document.getElementById('homeView').classList.add('hidden');
+            document.getElementById('shelfView').classList.remove('hidden');
+            document.getElementById('categoryTitle').textContent = repo.name;
+
+            loadShelfData();
+        }
+
+        async function loadShelfData() {
+            const grid = document.getElementById('bookGrid');
+            grid.innerHTML = '<div class="col-span-full text-center py-10 text-gray-500">加载中...</div>';
+            renderBreadcrumb();
+
+            try {
+                const list = await getRepoContents(currentRepoKey, currentPath);
+                grid.innerHTML = '';
+
+                // 非根目录显示返回上级
+                if (currentPath && currentPath !== REPO_CONFIG.find(r=>r.key===currentRepoKey).rootPath) {
+                    const backCard = document.createElement('div');
+                    backCard.className = 'book-card glass-card rounded-2xl p-6 flex flex-col items-center justify-center text-center min-h-[200px]';
+                    backCard.innerHTML = `
+                        <div class="text-4xl mb-3">📁</div>
+                        <h4 class="font-bold text-gray-800">返回上级</h4>
+                    `;
+                    backCard.onclick = goBackDir;
+                    grid.appendChild(backCard);
+                }
+
+                list.forEach(item => {
+                    const card = document.createElement('div');
+                    card.className = 'book-card glass-card rounded-2xl overflow-hidden';
+                    
+                    if (item.type === 'dir') {
+                        // 文件夹
+                        card.innerHTML = `
+                            <div class="h-32 bg-gradient-to-br from-amber-200/60 to-amber-400/60 flex items-center justify-center text-white text-4xl">
+                                📁
+                            </div>
+                            <div class="p-5">
+                                <h4 class="font-bold text-gray-800 mb-1 line-clamp-2">${item.name}</h4>
+                                <p class="text-xs text-gray-500">文件夹</p>
+                            </div>
+                        `;
+                        card.onclick = () => enterDir(item.path);
+                        grid.appendChild(card);
+                    } else {
+                        // 过滤文本类文件，自动跳过二进制
+                        const isTextFile = /\.(md|txt|js|css|html|json|vue|py|java|go|ts|jsx|tsx|yml|yaml|conf|ini)$/i.test(item.name);
+                        if (!isTextFile) return;
+
+                        card.innerHTML = `
+                            <div class="h-32 bg-gradient-to-br from-summer/60 to-summer-dark/60 flex items-center justify-center text-white text-4xl">
+                                📄
+                            </div>
+                            <div class="p-5">
+                                <h4 class="font-bold text-gray-800 mb-1 line-clamp-2">${item.name}</h4>
+                                <p class="text-xs text-gray-500">${(item.size / 1024).toFixed(1)} KB</p>
+                            </div>
+                        `;
+                        card.onclick = () => openDocFile(item.path, item.name);
+                        grid.appendChild(card);
+                    }
+                });
+
+                document.getElementById('docCount').textContent = `共 ${list.length} 项`;
+
+            } catch (err) {
+                grid.innerHTML = `<div class="col-span-full text-center py-10 text-red-500">${err.message}</div>`;
+            }
+        }
+
+        // 渲染路径面包屑
+        function renderBreadcrumb() {
+            const breadcrumb = document.getElementById('pathBreadcrumb');
+            const repo = REPO_CONFIG.find(r => r.key === currentRepoKey);
+            const rootPath = repo.rootPath || '';
+            
+            let pathArr = [];
+            if (currentPath) {
+                pathArr = currentPath.replace(rootPath, '').split('/').filter(Boolean);
+            }
+
+            let html = `<span class="text-summer-deep font-medium cursor-pointer" onclick="openCategory('${currentRepoKey}')">${repo.name}</span>`;
+            
+            let tempPath = rootPath;
+            pathArr.forEach((dir, index) => {
+                tempPath = tempPath ? `${tempPath}/${dir}` : dir;
+                html += `<span class="text-gray-400">/</span>`;
+                if (index === pathArr.length - 1) {
+                    html += `<span class="text-gray-700">${dir}</span>`;
+                } else {
+                    html += `<span class="text-summer-deep cursor-pointer hover:underline" onclick="jumpToPath('${tempPath}')">${dir}</span>`;
+                }
+            });
+
+            breadcrumb.innerHTML = html;
+        }
+
+        function enterDir(path) {
+            currentPath = path;
+            loadShelfData();
+        }
+
+        function jumpToPath(path) {
+            currentPath = path;
+            loadShelfData();
+        }
+
+        function goBackDir() {
+            const pathArr = currentPath.split('/');
+            pathArr.pop();
+            currentPath = pathArr.join('/');
+            loadShelfData();
+        }
+
+        // ========== 文档详情弹窗 ==========
+        async function openDocFile(filePath, fileName) {
+            const repo = REPO_CONFIG.find(r => r.key === currentRepoKey);
+            
+            document.getElementById('modalTitle').textContent = fileName;
+            document.getElementById('modalMeta').textContent = `${repo.name} · ${filePath}`;
+            document.getElementById('modalContent').textContent = '加载中...';
+
+            const modal = document.getElementById('docModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+
+            try {
+                const content = await getFileContent(currentRepoKey, filePath);
+                document.getElementById('modalContent').textContent = content;
+            } catch (err) {
+                document.getElementById('modalContent').textContent = '文件读取失败：' + err.message;
+            }
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('docModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        document.getElementById('docModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeModal();
+        });
+    </script>
 </body>
 </html>
