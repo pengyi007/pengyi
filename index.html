@@ -5,8 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>编程学习知识库</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 引入 Markdown 渲染库 -->
+    <!-- Markdown 渲染 -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- 代码语法高亮 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/python.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/bash.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/javascript.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/css.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/json.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/languages/yaml.min.js"></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -37,11 +47,20 @@
             }
         }
 
-        // 配置 Markdown 渲染规则
+        // 配置 Markdown 渲染 + 代码高亮
         marked.setOptions({
             breaks: true,
-            gfm: true
+            gfm: true,
+            highlight: function(code, lang) {
+                if (lang && hljs.getLanguage(lang)) {
+                    try {
+                        return hljs.highlight(code, { language: lang }).value;
+                    } catch (e) {}
+                }
+                return hljs.highlightAuto(code).value;
+            }
         });
+
         // 链接自动新窗口打开
         const renderer = new marked.Renderer();
         renderer.link = function(href, title, text) {
@@ -89,34 +108,178 @@
             .read-only-content {
                 user-select: text;
                 -webkit-user-select: text;
-                white-space: pre-wrap;
-                word-break: break-word;
             }
             .view-transition {
                 transition: opacity 0.4s ease, transform 0.4s ease;
             }
 
-            /* Markdown 排版样式 */
-            .markdown-body h1 { font-size: 1.8rem; font-weight: 700; margin: 1.2rem 0 0.8rem; color: #14532d; border-bottom: 1px solid #dcfce7; padding-bottom: 0.4rem; }
-            .markdown-body h2 { font-size: 1.5rem; font-weight: 700; margin: 1.2rem 0 0.6rem; color: #166534; }
-            .markdown-body h3 { font-size: 1.25rem; font-weight: 600; margin: 1rem 0 0.5rem; color: #15803d; }
-            .markdown-body h4 { font-size: 1.1rem; font-weight: 600; margin: 0.9rem 0 0.4rem; color: #166534; }
-            .markdown-body p { margin: 0.8rem 0; line-height: 1.8; }
-            .markdown-body ul, .markdown-body ol { margin: 0.8rem 0; padding-left: 1.8rem; }
+            /* ========== Markdown 专业排版样式 ========== */
+            .markdown-body {
+                max-width: 780px;
+                margin: 0 auto;
+                color: #1f2937;
+                font-size: 16px;
+                line-height: 1.85;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            }
+
+            /* 标题层级 */
+            .markdown-body h1 {
+                font-size: 1.9rem;
+                font-weight: 700;
+                color: #14532d;
+                margin: 1.8rem 0 1rem;
+                padding-bottom: 0.6rem;
+                border-bottom: 2px solid #bbf7d0;
+                line-height: 1.4;
+            }
+            .markdown-body h2 {
+                font-size: 1.55rem;
+                font-weight: 700;
+                color: #166534;
+                margin: 1.6rem 0 0.9rem;
+                padding-left: 0.7rem;
+                border-left: 4px solid #22c55e;
+                line-height: 1.45;
+            }
+            .markdown-body h3 {
+                font-size: 1.25rem;
+                font-weight: 600;
+                color: #15803d;
+                margin: 1.3rem 0 0.7rem;
+                line-height: 1.5;
+            }
+            .markdown-body h4 {
+                font-size: 1.1rem;
+                font-weight: 600;
+                color: #166534;
+                margin: 1.1rem 0 0.6rem;
+            }
+
+            /* 段落与文本 */
+            .markdown-body p {
+                margin: 0.9rem 0;
+                text-align: justify;
+                word-break: break-word;
+            }
+            .markdown-body strong {
+                color: #14532d;
+                font-weight: 600;
+            }
+            .markdown-body em {
+                color: #4b5563;
+                font-style: italic;
+            }
+
+            /* 列表 */
+            .markdown-body ul, .markdown-body ol {
+                margin: 0.9rem 0;
+                padding-left: 1.8rem;
+            }
             .markdown-body ul { list-style: disc; }
             .markdown-body ol { list-style: decimal; }
-            .markdown-body li { margin: 0.3rem 0; line-height: 1.7; }
-            .markdown-body code { background: #f0fdf4; padding: 0.15rem 0.4rem; border-radius: 4px; color: #166534; font-size: 0.9em; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-            .markdown-body pre { background: #f0fdf4; padding: 1rem; border-radius: 8px; overflow-x: auto; margin: 1rem 0; border: 1px solid #bbf7d0; }
-            .markdown-body pre code { background: transparent; padding: 0; }
-            .markdown-body img { max-width: 100%; border-radius: 8px; margin: 0.8rem auto; display: block; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-            .markdown-body blockquote { border-left: 4px solid #86efac; padding-left: 1rem; color: #4b5563; margin: 1rem 0; background: #f0fdf4; padding: 0.8rem 1rem; border-radius: 0 8px 8px 0; }
-            .markdown-body a { color: #16a34a; text-decoration: underline; text-underline-offset: 2px; }
-            .markdown-body hr { border: none; border-top: 1px solid #bbf7d0; margin: 1.5rem 0; }
-            .markdown-body table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
-            .markdown-body th, .markdown-body td { border: 1px solid #bbf7d0; padding: 0.5rem 0.8rem; }
-            .markdown-body th { background: #dcfce7; font-weight: 600; }
-            .markdown-body input[type="checkbox"] { margin-right: 0.5rem; accent-color: #16a34a; }
+            .markdown-body li {
+                margin: 0.4rem 0;
+                line-height: 1.75;
+            }
+            .markdown-body li ul, .markdown-body li ol {
+                margin: 0.4rem 0;
+            }
+            .markdown-body input[type="checkbox"] {
+                margin-right: 0.5rem;
+                accent-color: #16a34a;
+            }
+
+            /* 行内代码 */
+            .markdown-body code {
+                background: #f0fdf4;
+                color: #15803d;
+                padding: 0.15rem 0.45rem;
+                border-radius: 5px;
+                font-size: 0.92em;
+                font-family: "JetBrains Mono", "Fira Code", Consolas, "Courier New", monospace;
+                border: 1px solid #bbf7d0;
+            }
+
+            /* 代码块 */
+            .markdown-body pre {
+                background: #f6f8fa;
+                padding: 1rem 1.2rem;
+                border-radius: 8px;
+                overflow-x: auto;
+                margin: 1.1rem 0;
+                border: 1px solid #e5e7eb;
+                line-height: 1.65;
+            }
+            .markdown-body pre code {
+                background: transparent;
+                border: none;
+                padding: 0;
+                font-size: 0.9rem;
+                color: #24292f;
+            }
+
+            /* 引用块 */
+            .markdown-body blockquote {
+                border-left: 4px solid #4ade80;
+                background: #f0fdf4;
+                padding: 0.8rem 1.2rem;
+                margin: 1.1rem 0;
+                border-radius: 0 8px 8px 0;
+                color: #4b5563;
+            }
+            .markdown-body blockquote p {
+                margin: 0.4rem 0;
+            }
+
+            /* 图片 */
+            .markdown-body img {
+                max-width: 100%;
+                border-radius: 8px;
+                margin: 1rem auto;
+                display: block;
+                box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            }
+
+            /* 表格 */
+            .markdown-body table {
+                border-collapse: collapse;
+                width: 100%;
+                margin: 1.1rem 0;
+                font-size: 0.95rem;
+            }
+            .markdown-body th, .markdown-body td {
+                border: 1px solid #d1fae5;
+                padding: 0.6rem 0.9rem;
+                text-align: left;
+            }
+            .markdown-body th {
+                background: #dcfce7;
+                font-weight: 600;
+                color: #166534;
+            }
+            .markdown-body tr:nth-child(even) {
+                background: #f0fdf4;
+            }
+
+            /* 分割线 */
+            .markdown-body hr {
+                border: none;
+                border-top: 1px solid #bbf7d0;
+                margin: 1.8rem 0;
+            }
+
+            /* 链接 */
+            .markdown-body a {
+                color: #16a34a;
+                text-decoration: none;
+                border-bottom: 1px solid #bbf7d0;
+                transition: all 0.2s;
+            }
+            .markdown-body a:hover {
+                color: #15803d;
+                border-bottom-color: #16a34a;
+            }
         }
     </style>
 </head>
@@ -271,7 +434,7 @@
 
     <!-- 文档详情只读弹窗 -->
     <div id="docModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/20 backdrop-blur-sm">
-        <div class="doc-modal-card w-full max-w-4xl max-h-[85vh] rounded-2xl overflow-hidden flex flex-col">
+        <div class="doc-modal-card w-full max-w-4xl max-h-[88vh] rounded-2xl overflow-hidden flex flex-col">
             <!-- 弹窗头部 -->
             <div class="px-8 pt-8 pb-5">
                 <div class="flex items-start justify-between gap-4">
@@ -289,7 +452,7 @@
             <div class="mx-8 h-px bg-gradient-to-r from-transparent via-green-200 to-transparent"></div>
 
             <!-- 只读内容区 -->
-            <div id="modalContent" class="px-8 py-6 overflow-y-auto read-only-content text-gray-700 leading-8 text-base flex-1">
+            <div id="modalContent" class="px-6 md:px-10 py-8 overflow-y-auto read-only-content flex-1 bg-white/60">
                 <!-- JS 动态填充 -->
             </div>
 
@@ -305,15 +468,14 @@
         // ========== 🔧 仓库配置区（在这里填写） ==========
         // ==============================================
         const REPO_CONFIG = [
-            // 示例：公开仓库直接填，无需 Token
             {
                 key: 'frontend-notes',
                 name: 'Python',
                 desc: 'python学习笔记',
-                owner: 'pengyi007',  // 你的 GitHub 用户名
-                repo: 'Study_Python',      // 仓库名
-                branch: 'main',                  // 分支名，main 或 master
-                rootPath: '',                    // 起始目录，空代表根目录
+                owner: 'pengyi007',
+                repo: 'Study_Python',
+                branch: 'main',
+                rootPath: '',
                 icon: '&lt;/&gt;',
                 iconBg: 'bg-blue-500'
             },
@@ -328,11 +490,9 @@
                 icon: '🖥️',
                 iconBg: 'bg-purple-500'
             }
-            // 继续添加更多仓库...
         ];
 
-        // GitHub 个人访问令牌（私有仓库必填，公开仓库留空即可）
-        // ⚠️ 警告：Token 仅本地使用，不要部署到公网、不要上传到公开仓库
+        // 公开仓库无需 Token，保持为空即可
         const GITHUB_TOKEN = '';
         const API_BASE = 'https://api.github.com';
         // ==============================================
@@ -581,7 +741,7 @@
                         card.onclick = () => enterDir(item.path);
                         grid.appendChild(card);
                     } else {
-                        // 支持查看的文件：markdown、常见文本、图片
+                        // 支持查看的文件
                         const isViewable = /\.(md|txt|js|css|html|json|vue|py|java|go|ts|jsx|tsx|yml|yaml|conf|ini|png|jpg|jpeg|gif|webp|svg|bmp)$/i.test(item.name);
                         if (!isViewable) return;
 
@@ -662,14 +822,14 @@
             
             document.getElementById('modalTitle').textContent = fileName;
             document.getElementById('modalMeta').textContent = `${repo.name} · ${filePath}`;
-            document.getElementById('modalContent').innerHTML = '<div class="text-center text-gray-500">加载中...</div>';
+            document.getElementById('modalContent').innerHTML = '<div class="text-center text-gray-500 py-10">加载中...</div>';
 
             const modal = document.getElementById('docModal');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
 
             try {
-                // 图片文件直接渲染，不走API
+                // 图片文件直接渲染
                 const isImage = /\.(png|jpg|jpeg|gif|webp|svg|bmp)$/i.test(fileName);
                 if (isImage) {
                     const imgUrl = getRawUrl(currentRepoKey, filePath);
@@ -693,10 +853,10 @@
                     document.getElementById('modalContent').innerHTML = `<div class="markdown-body">${html}</div>`;
                 } else {
                     // 其他文本文件保持纯文本
-                    document.getElementById('modalContent').textContent = content;
+                    document.getElementById('modalContent').innerHTML = `<pre class="bg-gray-50 p-4 rounded-lg overflow-x-auto text-sm">${content}</pre>`;
                 }
             } catch (err) {
-                document.getElementById('modalContent').innerHTML = `<div class="text-red-500 text-center">文件读取失败：${err.message}</div>`;
+                document.getElementById('modalContent').innerHTML = `<div class="text-red-500 text-center py-10">文件读取失败：${err.message}</div>`;
             }
         }
 
