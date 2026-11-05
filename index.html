@@ -2,10 +2,10 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.1">
     <title>编程学习知识库</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Markdown 渲染 -->
+    <!-- Markdown 渲染引擎 -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <!-- 代码语法高亮 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github.min.css">
@@ -47,7 +47,7 @@
             }
         }
 
-        // 配置 Markdown 渲染 + 代码高亮
+        // Markdown 渲染配置
         marked.setOptions({
             breaks: true,
             gfm: true,
@@ -104,7 +104,51 @@
                 transition: opacity 0.4s ease, transform 0.4s ease;
             }
 
-            /* ========== 弹窗与目录样式 ========== */
+            /* 首页入口卡片 */
+            .repo-entry-card {
+                background: rgba(255, 255, 255, 0.55);
+                border: 1px solid rgba(255, 255, 255, 0.7);
+                border-radius: 18px;
+                padding: 28px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 8px 24px rgba(22, 163, 74, 0.08);
+            }
+            .repo-entry-card:hover {
+                transform: translateY(-8px);
+                box-shadow: 0 18px 40px rgba(22, 163, 74, 0.18);
+                border-color: rgba(134, 239, 172, 0.9);
+            }
+            .repo-entry-icon {
+                width: 64px;
+                height: 64px;
+                border-radius: 16px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 34px;
+                color: white;
+                margin-bottom: 14px;
+                box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+            }
+            .icon-python {
+                background: linear-gradient(135deg, #38bdf8, #10b981);
+            }
+            .icon-linux {
+                background: linear-gradient(135deg, #1f2937, #166534);
+            }
+            .repo-entry-title {
+                font-size: 22px;
+                font-weight: 700;
+                color: #14532d;
+                margin-bottom: 6px;
+            }
+            .repo-entry-desc {
+                font-size: 14px;
+                color: #4b5563;
+            }
+
+            /* 文档弹窗 */
             .doc-modal {
                 background: #fafffb;
                 box-shadow: 0 25px 80px rgba(0, 0, 0, 0.18);
@@ -136,7 +180,7 @@
             .toc-h2 { padding-left: 12px; }
             .toc-h3 { padding-left: 28px; font-size: 13px; color: #6b7280; }
 
-            /* 内容滚动条美化 */
+            /* 滚动条美化 */
             .content-scroll::-webkit-scrollbar {
                 width: 6px;
             }
@@ -151,7 +195,7 @@
                 background: #22c55e;
             }
 
-            /* ========== Markdown 专业排版 ========== */
+            /* Markdown 专业排版 */
             .markdown-body {
                 max-width: 780px;
                 margin: 0 auto;
@@ -160,8 +204,6 @@
                 line-height: 1.85;
                 font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
             }
-
-            /* 标题层级 */
             .markdown-body h1 {
                 font-size: 1.9rem;
                 font-weight: 700;
@@ -195,8 +237,6 @@
                 color: #166534;
                 margin: 1.1rem 0 0.6rem;
             }
-
-            /* 段落与文本 */
             .markdown-body p {
                 margin: 0.9rem 0;
                 text-align: justify;
@@ -206,12 +246,6 @@
                 color: #14532d;
                 font-weight: 600;
             }
-            .markdown-body em {
-                color: #4b5563;
-                font-style: italic;
-            }
-
-            /* 列表 */
             .markdown-body ul, .markdown-body ol {
                 margin: 0.9rem 0;
                 padding-left: 1.8rem;
@@ -229,8 +263,6 @@
                 margin-right: 0.5rem;
                 accent-color: #16a34a;
             }
-
-            /* 行内代码 */
             .markdown-body code {
                 background: #f0fdf4;
                 color: #15803d;
@@ -240,8 +272,6 @@
                 font-family: "JetBrains Mono", "Fira Code", Consolas, "Courier New", monospace;
                 border: 1px solid #bbf7d0;
             }
-
-            /* 代码块 */
             .markdown-body pre {
                 background: #f6f8fa;
                 padding: 1rem 1.2rem;
@@ -258,8 +288,6 @@
                 font-size: 0.9rem;
                 color: #24292f;
             }
-
-            /* 引用块 */
             .markdown-body blockquote {
                 border-left: 4px solid #4ade80;
                 background: #f0fdf4;
@@ -271,8 +299,6 @@
             .markdown-body blockquote p {
                 margin: 0.4rem 0;
             }
-
-            /* 图片 */
             .markdown-body img {
                 max-width: 100%;
                 border-radius: 8px;
@@ -280,8 +306,6 @@
                 display: block;
                 box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
             }
-
-            /* 表格 */
             .markdown-body table {
                 border-collapse: collapse;
                 width: 100%;
@@ -301,15 +325,11 @@
             .markdown-body tr:nth-child(even) {
                 background: #f0fdf4;
             }
-
-            /* 分割线 */
             .markdown-body hr {
                 border: none;
                 border-top: 1px solid #bbf7d0;
                 margin: 1.8rem 0;
             }
-
-            /* 链接 */
             .markdown-body a {
                 color: #16a34a;
                 text-decoration: none;
@@ -325,7 +345,7 @@
 </head>
 <body class="min-h-screen bg-gradient-to-br from-green-50 via-emerald-100 to-teal-200 overflow-x-hidden">
 
-    <!-- ========== 主界面（入口页） ========== -->
+    <!-- ========== 入口页 ========== -->
     <div id="landingView" class="view-transition min-h-screen flex items-center justify-center relative overflow-hidden">
         <div class="absolute top-20 left-20 w-72 h-72 bg-green-300/30 rounded-full blur-3xl animate-float"></div>
         <div class="absolute bottom-20 right-20 w-96 h-96 bg-teal-300/30 rounded-full blur-3xl animate-float" style="animation-delay: 2s"></div>
@@ -374,7 +394,7 @@
 
     <!-- ========== 知识库主界面 ========== -->
     <div id="appView" class="view-transition hidden min-h-screen">
-        <!-- 顶部导航栏 -->
+        <!-- 顶部导航 -->
         <header class="glass-card fixed top-0 left-0 right-0 z-50 h-16 px-6 flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <button onclick="backToLanding()" class="w-9 h-9 rounded-lg hover:bg-white/50 flex items-center justify-center text-gray-600 transition-colors">
@@ -397,16 +417,15 @@
                     </button>
                     <div class="text-xs text-gray-500 px-4 mt-4 mb-2">仓库目录</div>
                     <div id="sidebarNav" class="space-y-1">
-                        <!-- JS 动态生成侧边栏菜单 -->
+                        <!-- 动态生成 -->
                     </div>
                 </nav>
             </aside>
 
             <!-- 主内容区 -->
             <main class="flex-1 md:ml-64 p-6 md:p-8">
-                <!-- 首页看板视图 -->
+                <!-- 首页看板 -->
                 <div id="homeView">
-                    <!-- 独立看板统计模块 -->
                     <section class="glass-card rounded-2xl p-6 md:p-8 mb-8">
                         <h2 class="text-xl font-bold text-summer-deep mb-6">📊 数据总览</h2>
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
@@ -438,16 +457,15 @@
                         </div>
                     </section>
 
-                    <!-- 仓库分类入口 -->
                     <section>
                         <h2 class="text-xl font-bold text-summer-deep mb-6">📂 全部仓库</h2>
                         <div id="repoCardGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            <!-- JS 动态生成仓库卡片 -->
+                            <!-- 动态生成 -->
                         </div>
                     </section>
                 </div>
 
-                <!-- 书架视图（仓库目录） -->
+                <!-- 书架视图 -->
                 <div id="shelfView" class="hidden">
                     <div class="flex items-center justify-between mb-6">
                         <div class="flex items-center gap-3">
@@ -459,20 +477,19 @@
                         <span class="text-sm text-gray-600" id="docCount"></span>
                     </div>
 
-                    <!-- 当前路径面包屑 -->
                     <div id="pathBreadcrumb" class="mb-4 text-sm text-gray-600 flex items-center gap-2 flex-wrap">
-                        <!-- 动态渲染路径 -->
+                        <!-- 动态路径 -->
                     </div>
 
                     <div id="bookGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        <!-- JS 动态渲染目录/文件 -->
+                        <!-- 动态渲染 -->
                     </div>
                 </div>
             </main>
         </div>
     </div>
 
-    <!-- 文档详情弹窗（近全屏 + 左侧目录） -->
+    <!-- 文档详情弹窗（近全屏 + 目录） -->
     <div id="docModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/25 backdrop-blur-sm">
         <div class="doc-modal w-[90vw] max-w-[1600px] h-[92vh] rounded-2xl overflow-hidden flex flex-col">
             <!-- 顶部标题栏 -->
@@ -489,21 +506,18 @@
 
             <!-- 主体：左侧目录 + 右侧内容 -->
             <div class="flex flex-1 overflow-hidden">
-                <!-- 左侧目录栏 -->
                 <aside class="toc-sidebar w-64 flex-shrink-0 p-5 overflow-y-auto content-scroll hidden md:block">
                     <div class="text-sm font-semibold text-summer-deep mb-3 px-3">📑 目录导航</div>
                     <div id="tocList" class="space-y-0.5">
-                        <!-- JS 自动生成目录 -->
+                        <!-- 自动生成目录 -->
                     </div>
                 </aside>
 
-                <!-- 右侧内容区 -->
                 <div id="modalContent" class="flex-1 px-8 py-8 overflow-y-auto content-scroll bg-white/60">
-                    <!-- JS 动态填充 -->
+                    <!-- 动态内容 -->
                 </div>
             </div>
 
-            <!-- 底部状态栏 -->
             <div class="px-8 py-3 text-center text-xs text-gray-400 border-t border-green-50 bg-green-50/70 flex-shrink-0">
                 只读模式 · 内容来自 GitHub 仓库 · 不可修改 · 按 ESC 关闭
             </div>
@@ -512,7 +526,7 @@
 
     <script>
         // ==============================================
-        // ========== 🔧 仓库配置区 ==========
+        // ========== 仓库配置 ==========
         // ==============================================
         const REPO_CONFIG = [
             {
@@ -522,9 +536,7 @@
                 owner: 'pengyi007',
                 repo: 'Study_Python',
                 branch: 'main',
-                rootPath: '',
-                icon: '&lt;/&gt;',
-                iconBg: 'bg-blue-500'
+                rootPath: ''
             },
             {
                 key: 'backend-notes',
@@ -533,12 +545,11 @@
                 owner: 'pengyi007',
                 repo: 'Study_Ops',
                 branch: 'main',
-                rootPath: '',
-                icon: '🖥️',
-                iconBg: 'bg-purple-500'
+                rootPath: ''
             }
         ];
 
+        // 公开仓库留空即可，私有仓库才填 Token
         const GITHUB_TOKEN = '';
         const API_BASE = 'https://api.github.com';
         // ==============================================
@@ -547,12 +558,29 @@
         let currentPath = '';
 
         // ========== 工具函数 ==========
+        // Base64 转 UTF-8，彻底解决中文乱码
+        function base64ToUtf8(base64) {
+            try {
+                const binary = window.atob(base64);
+                const bytes = new Uint8Array(binary.length);
+                for (let i = 0; i < binary.length; i++) {
+                    bytes[i] = binary.charCodeAt(i);
+                }
+                return new TextDecoder('utf-8').decode(bytes);
+            } catch (e) {
+                console.error('解码失败', e);
+                return '';
+            }
+        }
+
+        // 获取文件 Raw 直链
         function getRawUrl(repoKey, filePath) {
             const repo = REPO_CONFIG.find(r => r.key === repoKey);
             if (!repo) return '';
             return `https://raw.githubusercontent.com/${repo.owner}/${repo.repo}/${repo.branch}/${filePath}`;
         }
 
+        // 解析 Markdown 内相对路径图片
         function resolveMarkdownImages(markdown, repoKey, currentFilePath) {
             const repo = REPO_CONFIG.find(r => r.key === repoKey);
             if (!repo) return markdown;
@@ -597,7 +625,7 @@
             });
             tocEl.innerHTML = html;
 
-            // 滚动监听高亮当前标题
+            // 滚动高亮当前标题
             const contentScroll = document.getElementById('modalContent');
             contentScroll.onscroll = () => {
                 let currentId = '';
@@ -665,7 +693,7 @@
             const data = await githubRequest(url);
             
             if (data.encoding === 'base64') {
-                return decodeURIComponent(escape(window.atob(data.content)));
+                return base64ToUtf8(data.content);
             }
             return data.content || '';
         }
@@ -682,36 +710,56 @@
             document.getElementById('statRepoCount').textContent = REPO_CONFIG.length;
         }
 
+        // 首页入口卡片
         function renderHomeRepoCards() {
             const grid = document.getElementById('repoCardGrid');
             grid.innerHTML = '';
 
-            REPO_CONFIG.forEach(repo => {
+            const cards = [
+                {
+                    key: 'frontend-notes',
+                    title: 'Python',
+                    desc: 'Python 学习笔记',
+                    icon: '🐍',
+                    iconClass: 'icon-python'
+                },
+                {
+                    key: 'backend-notes',
+                    title: '运维',
+                    desc: 'Linux / Shell / 中间件',
+                    icon: '🐧',
+                    iconClass: 'icon-linux'
+                }
+            ];
+
+            cards.forEach(item => {
                 const card = document.createElement('div');
-                card.className = 'glass-card rounded-2xl p-6 cursor-pointer transition-all hover:scale-105 hover:shadow-lg';
+                card.className = 'repo-entry-card';
                 card.innerHTML = `
-                    <div class="category-icon ${repo.iconBg} mb-4">${repo.icon}</div>
-                    <h3 class="text-lg font-bold text-gray-800 mb-1">${repo.name}</h3>
-                    <p class="text-sm text-gray-600 mb-4">${repo.desc}</p>
-                    <div class="flex justify-between items-end">
-                        <span class="text-sm text-gray-500">GitHub 仓库</span>
-                        <span class="text-xs bg-summer/30 text-summer-deep px-3 py-1 rounded-full">只读</span>
-                    </div>
+                    <div class="${item.iconClass} repo-entry-icon">${item.icon}</div>
+                    <div class="repo-entry-title">${item.title}</div>
+                    <div class="repo-entry-desc">${item.desc}</div>
                 `;
-                card.onclick = () => openCategory(repo.key);
+                card.onclick = () => openCategory(item.key);
                 grid.appendChild(card);
             });
         }
 
+        // 侧边栏菜单
         function renderSidebar() {
             const nav = document.getElementById('sidebarNav');
             nav.innerHTML = '';
 
             REPO_CONFIG.forEach(repo => {
+                const sideIcon = repo.key === 'frontend-notes' ? '🐍' : '🐧';
+                const sideColor = repo.key === 'frontend-notes' 
+                    ? 'bg-gradient-to-br from-sky-400 to-emerald-500' 
+                    : 'bg-gradient-to-br from-gray-800 to-green-700';
+
                 const btn = document.createElement('button');
                 btn.className = 'w-full text-left px-4 py-2.5 rounded-lg hover:bg-white/50 transition-colors flex items-center gap-3 text-gray-700';
                 btn.innerHTML = `
-                    <span class="w-6 h-6 rounded ${repo.iconBg} text-white text-xs flex items-center justify-center">${repo.icon}</span>
+                    <span class="w-6 h-6 rounded ${sideColor} text-white text-xs flex items-center justify-center">${sideIcon}</span>
                     ${repo.name}
                 `;
                 btn.onclick = () => openCategory(repo.key);
@@ -719,7 +767,7 @@
             });
         }
 
-        // ========== 页面切换逻辑 ==========
+        // ========== 页面切换 ==========
         function enterLibrary() {
             const landing = document.getElementById('landingView');
             const app = document.getElementById('appView');
@@ -771,7 +819,7 @@
             closeModal();
         }
 
-        // ========== 书架浏览逻辑 ==========
+        // ========== 书架浏览 ==========
         function openCategory(repoKey) {
             const repo = REPO_CONFIG.find(r => r.key === repoKey);
             if (!repo) return;
@@ -795,7 +843,9 @@
                 const list = await getRepoContents(currentRepoKey, currentPath);
                 grid.innerHTML = '';
 
-                if (currentPath && currentPath !== REPO_CONFIG.find(r=>r.key===currentRepoKey).rootPath) {
+                // 返回上级
+                const rootPath = REPO_CONFIG.find(r=>r.key===currentRepoKey).rootPath;
+                if (currentPath && currentPath !== rootPath) {
                     const backCard = document.createElement('div');
                     backCard.className = 'book-card glass-card rounded-2xl p-6 flex flex-col items-center justify-center text-center min-h-[200px]';
                     backCard.innerHTML = `
@@ -910,6 +960,7 @@
             modal.classList.add('flex');
 
             try {
+                // 图片直接预览
                 const isImage = /\.(png|jpg|jpeg|gif|webp|svg|bmp)$/i.test(fileName);
                 if (isImage) {
                     const imgUrl = getRawUrl(currentRepoKey, filePath);
@@ -921,6 +972,7 @@
                     return;
                 }
 
+                // Markdown 渲染
                 const isMarkdown = /\.md$/i.test(fileName);
                 const content = await getFileContent(currentRepoKey, filePath);
 
@@ -928,7 +980,6 @@
                     const resolvedContent = resolveMarkdownImages(content, currentRepoKey, filePath);
                     const html = marked.parse(resolvedContent);
                     document.getElementById('modalContent').innerHTML = `<div class="markdown-body">${html}</div>`;
-                    // 渲染完生成目录
                     setTimeout(generateToc, 0);
                 } else {
                     document.getElementById('modalContent').innerHTML = `<pre class="bg-gray-50 p-6 rounded-lg overflow-x-auto text-sm">${content}</pre>`;
@@ -944,10 +995,12 @@
             modal.classList.remove('flex');
         }
 
+        // 点击遮罩关闭
         document.getElementById('docModal').addEventListener('click', function(e) {
             if (e.target === this) closeModal();
         });
 
+        // ESC 关闭
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') closeModal();
         });
