@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>编程学习知识库</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入 Markdown 渲染库 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -34,6 +36,18 @@
                 }
             }
         }
+
+        // 配置 Markdown 渲染规则
+        marked.setOptions({
+            breaks: true,
+            gfm: true
+        });
+        // 链接自动新窗口打开
+        const renderer = new marked.Renderer();
+        renderer.link = function(href, title, text) {
+            return `<a href="${href}" title="${title || ''}" target="_blank" rel="noopener noreferrer">${text}</a>`;
+        };
+        marked.use({ renderer });
     </script>
     <style type="text/tailwindcss">
         @layer utilities {
@@ -81,6 +95,28 @@
             .view-transition {
                 transition: opacity 0.4s ease, transform 0.4s ease;
             }
+
+            /* Markdown 排版样式 */
+            .markdown-body h1 { font-size: 1.8rem; font-weight: 700; margin: 1.2rem 0 0.8rem; color: #14532d; border-bottom: 1px solid #dcfce7; padding-bottom: 0.4rem; }
+            .markdown-body h2 { font-size: 1.5rem; font-weight: 700; margin: 1.2rem 0 0.6rem; color: #166534; }
+            .markdown-body h3 { font-size: 1.25rem; font-weight: 600; margin: 1rem 0 0.5rem; color: #15803d; }
+            .markdown-body h4 { font-size: 1.1rem; font-weight: 600; margin: 0.9rem 0 0.4rem; color: #166534; }
+            .markdown-body p { margin: 0.8rem 0; line-height: 1.8; }
+            .markdown-body ul, .markdown-body ol { margin: 0.8rem 0; padding-left: 1.8rem; }
+            .markdown-body ul { list-style: disc; }
+            .markdown-body ol { list-style: decimal; }
+            .markdown-body li { margin: 0.3rem 0; line-height: 1.7; }
+            .markdown-body code { background: #f0fdf4; padding: 0.15rem 0.4rem; border-radius: 4px; color: #166534; font-size: 0.9em; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+            .markdown-body pre { background: #f0fdf4; padding: 1rem; border-radius: 8px; overflow-x: auto; margin: 1rem 0; border: 1px solid #bbf7d0; }
+            .markdown-body pre code { background: transparent; padding: 0; }
+            .markdown-body img { max-width: 100%; border-radius: 8px; margin: 0.8rem auto; display: block; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+            .markdown-body blockquote { border-left: 4px solid #86efac; padding-left: 1rem; color: #4b5563; margin: 1rem 0; background: #f0fdf4; padding: 0.8rem 1rem; border-radius: 0 8px 8px 0; }
+            .markdown-body a { color: #16a34a; text-decoration: underline; text-underline-offset: 2px; }
+            .markdown-body hr { border: none; border-top: 1px solid #bbf7d0; margin: 1.5rem 0; }
+            .markdown-body table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+            .markdown-body th, .markdown-body td { border: 1px solid #bbf7d0; padding: 0.5rem 0.8rem; }
+            .markdown-body th { background: #dcfce7; font-weight: 600; }
+            .markdown-body input[type="checkbox"] { margin-right: 0.5rem; accent-color: #16a34a; }
         }
     </style>
 </head>
@@ -305,6 +341,42 @@
         let currentRepoKey = '';
         let currentPath = '';
 
+        // ========== 工具函数 ==========
+        // 生成文件的 GitHub Raw 直链
+        function getRawUrl(repoKey, filePath) {
+            const repo = REPO_CONFIG.find(r => r.key === repoKey);
+            if (!repo) return '';
+            return `https://raw.githubusercontent.com/${repo.owner}/${repo.repo}/${repo.branch}/${filePath}`;
+        }
+
+        // 解析 Markdown 内的相对路径图片，替换为绝对直链
+        function resolveMarkdownImages(markdown, repoKey, currentFilePath) {
+            const repo = REPO_CONFIG.find(r => r.key === repoKey);
+            if (!repo) return markdown;
+
+            // 获取当前文件所在目录
+            const dirPath = currentFilePath.includes('/') 
+                ? currentFilePath.substring(0, currentFilePath.lastIndexOf('/')) 
+                : '';
+
+            // 替换所有相对路径图片
+            return markdown.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, imgPath) => {
+                // 绝对路径、base64 不处理
+                if (imgPath.startsWith('http://') || imgPath.startsWith('https://') || imgPath.startsWith('data:')) {
+                    return match;
+                }
+                // 拼接完整路径
+                let fullPath;
+                if (imgPath.startsWith('/')) {
+                    fullPath = imgPath.slice(1);
+                } else {
+                    fullPath = dirPath ? `${dirPath}/${imgPath}` : imgPath;
+                }
+                const rawUrl = getRawUrl(repoKey, fullPath);
+                return `![${alt}](${rawUrl})`;
+            });
+        }
+
         // ========== GitHub API 封装 ==========
         async function githubRequest(url) {
             const headers = {
@@ -509,13 +581,19 @@
                         card.onclick = () => enterDir(item.path);
                         grid.appendChild(card);
                     } else {
-                        // 过滤文本类文件，自动跳过二进制
-                        const isTextFile = /\.(md|txt|js|css|html|json|vue|py|java|go|ts|jsx|tsx|yml|yaml|conf|ini)$/i.test(item.name);
-                        if (!isTextFile) return;
+                        // 支持查看的文件：markdown、常见文本、图片
+                        const isViewable = /\.(md|txt|js|css|html|json|vue|py|java|go|ts|jsx|tsx|yml|yaml|conf|ini|png|jpg|jpeg|gif|webp|svg|bmp)$/i.test(item.name);
+                        if (!isViewable) return;
+
+                        const isImage = /\.(png|jpg|jpeg|gif|webp|svg|bmp)$/i.test(item.name);
+                        const fileIcon = isImage ? '🖼️' : '📄';
+                        const gradientClass = isImage 
+                            ? 'bg-gradient-to-br from-pink-200/60 to-rose-400/60' 
+                            : 'bg-gradient-to-br from-summer/60 to-summer-dark/60';
 
                         card.innerHTML = `
-                            <div class="h-32 bg-gradient-to-br from-summer/60 to-summer-dark/60 flex items-center justify-center text-white text-4xl">
-                                📄
+                            <div class="h-32 ${gradientClass} flex items-center justify-center text-white text-4xl">
+                                ${fileIcon}
                             </div>
                             <div class="p-5">
                                 <h4 class="font-bold text-gray-800 mb-1 line-clamp-2">${item.name}</h4>
@@ -578,23 +656,47 @@
             loadShelfData();
         }
 
-        // ========== 文档详情弹窗 ==========
+        // ========== 文档/图片详情弹窗 ==========
         async function openDocFile(filePath, fileName) {
             const repo = REPO_CONFIG.find(r => r.key === currentRepoKey);
             
             document.getElementById('modalTitle').textContent = fileName;
             document.getElementById('modalMeta').textContent = `${repo.name} · ${filePath}`;
-            document.getElementById('modalContent').textContent = '加载中...';
+            document.getElementById('modalContent').innerHTML = '<div class="text-center text-gray-500">加载中...</div>';
 
             const modal = document.getElementById('docModal');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
 
             try {
+                // 图片文件直接渲染，不走API
+                const isImage = /\.(png|jpg|jpeg|gif|webp|svg|bmp)$/i.test(fileName);
+                if (isImage) {
+                    const imgUrl = getRawUrl(currentRepoKey, filePath);
+                    document.getElementById('modalContent').innerHTML = `
+                        <div class="flex justify-center items-center">
+                            <img src="${imgUrl}" alt="${fileName}" class="max-w-full max-h-[70vh] rounded-lg shadow-md">
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Markdown 文件渲染
+                const isMarkdown = /\.md$/i.test(fileName);
                 const content = await getFileContent(currentRepoKey, filePath);
-                document.getElementById('modalContent').textContent = content;
+
+                if (isMarkdown) {
+                    // 解析相对路径图片
+                    const resolvedContent = resolveMarkdownImages(content, currentRepoKey, filePath);
+                    // 渲染为 HTML
+                    const html = marked.parse(resolvedContent);
+                    document.getElementById('modalContent').innerHTML = `<div class="markdown-body">${html}</div>`;
+                } else {
+                    // 其他文本文件保持纯文本
+                    document.getElementById('modalContent').textContent = content;
+                }
             } catch (err) {
-                document.getElementById('modalContent').textContent = '文件读取失败：' + err.message;
+                document.getElementById('modalContent').innerHTML = `<div class="text-red-500 text-center">文件读取失败：${err.message}</div>`;
             }
         }
 
