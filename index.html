@@ -81,11 +81,6 @@
                 backdrop-filter: blur(16px);
                 border-right: 1px solid rgba(255, 255, 255, 0.6);
             }
-            .doc-modal-card {
-                background: #fafffb;
-                border: 1px solid rgba(22, 163, 74, 0.15);
-                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-            }
             .category-icon {
                 width: 48px;
                 height: 48px;
@@ -105,15 +100,58 @@
                 transform: translateY(-6px);
                 box-shadow: 0 12px 24px rgba(22, 163, 74, 0.15);
             }
-            .read-only-content {
-                user-select: text;
-                -webkit-user-select: text;
-            }
             .view-transition {
                 transition: opacity 0.4s ease, transform 0.4s ease;
             }
 
-            /* ========== Markdown 专业排版样式 ========== */
+            /* ========== 弹窗与目录样式 ========== */
+            .doc-modal {
+                background: #fafffb;
+                box-shadow: 0 25px 80px rgba(0, 0, 0, 0.18);
+                border: 1px solid rgba(22, 163, 74, 0.12);
+            }
+            .toc-sidebar {
+                background: #f0fdf4;
+                border-right: 1px solid #dcfce7;
+            }
+            .toc-item {
+                display: block;
+                padding: 6px 12px;
+                border-radius: 6px;
+                font-size: 14px;
+                color: #374151;
+                cursor: pointer;
+                transition: all 0.2s;
+                margin-bottom: 2px;
+            }
+            .toc-item:hover {
+                background: #dcfce7;
+                color: #166534;
+            }
+            .toc-item.active {
+                background: #bbf7d0;
+                color: #14532d;
+                font-weight: 500;
+            }
+            .toc-h2 { padding-left: 12px; }
+            .toc-h3 { padding-left: 28px; font-size: 13px; color: #6b7280; }
+
+            /* 内容滚动条美化 */
+            .content-scroll::-webkit-scrollbar {
+                width: 6px;
+            }
+            .content-scroll::-webkit-scrollbar-track {
+                background: #f0fdf4;
+            }
+            .content-scroll::-webkit-scrollbar-thumb {
+                background: #86efac;
+                border-radius: 3px;
+            }
+            .content-scroll::-webkit-scrollbar-thumb:hover {
+                background: #22c55e;
+            }
+
+            /* ========== Markdown 专业排版 ========== */
             .markdown-body {
                 max-width: 780px;
                 margin: 0 auto;
@@ -128,7 +166,7 @@
                 font-size: 1.9rem;
                 font-weight: 700;
                 color: #14532d;
-                margin: 1.8rem 0 1rem;
+                margin: 0 0 1.2rem;
                 padding-bottom: 0.6rem;
                 border-bottom: 2px solid #bbf7d0;
                 line-height: 1.4;
@@ -137,10 +175,11 @@
                 font-size: 1.55rem;
                 font-weight: 700;
                 color: #166534;
-                margin: 1.6rem 0 0.9rem;
+                margin: 1.8rem 0 0.9rem;
                 padding-left: 0.7rem;
                 border-left: 4px solid #22c55e;
                 line-height: 1.45;
+                scroll-margin-top: 20px;
             }
             .markdown-body h3 {
                 font-size: 1.25rem;
@@ -148,6 +187,7 @@
                 color: #15803d;
                 margin: 1.3rem 0 0.7rem;
                 line-height: 1.5;
+                scroll-margin-top: 20px;
             }
             .markdown-body h4 {
                 font-size: 1.1rem;
@@ -432,40 +472,47 @@
         </div>
     </div>
 
-    <!-- 文档详情只读弹窗 -->
-    <div id="docModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/20 backdrop-blur-sm">
-        <div class="doc-modal-card w-full max-w-4xl max-h-[88vh] rounded-2xl overflow-hidden flex flex-col">
-            <!-- 弹窗头部 -->
-            <div class="px-8 pt-8 pb-5">
-                <div class="flex items-start justify-between gap-4">
-                    <div>
-                        <h3 id="modalTitle" class="text-xl font-bold text-summer-deep"></h3>
-                        <p id="modalMeta" class="text-sm text-gray-500 mt-2"></p>
+    <!-- 文档详情弹窗（近全屏 + 左侧目录） -->
+    <div id="docModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-black/25 backdrop-blur-sm">
+        <div class="doc-modal w-[90vw] max-w-[1600px] h-[92vh] rounded-2xl overflow-hidden flex flex-col">
+            <!-- 顶部标题栏 -->
+            <div class="flex items-center justify-between px-8 py-5 border-b border-green-100 bg-white/80 backdrop-blur-sm flex-shrink-0">
+                <div>
+                    <h3 id="modalTitle" class="text-xl font-bold text-summer-deep"></h3>
+                    <p id="modalMeta" class="text-sm text-gray-500 mt-1"></p>
+                </div>
+                <button onclick="closeModal()" 
+                    class="w-9 h-9 rounded-full hover:bg-green-100 flex items-center justify-center text-gray-500 hover:text-summer-deep transition-all flex-shrink-0 text-lg">
+                    ✕
+                </button>
+            </div>
+
+            <!-- 主体：左侧目录 + 右侧内容 -->
+            <div class="flex flex-1 overflow-hidden">
+                <!-- 左侧目录栏 -->
+                <aside class="toc-sidebar w-64 flex-shrink-0 p-5 overflow-y-auto content-scroll hidden md:block">
+                    <div class="text-sm font-semibold text-summer-deep mb-3 px-3">📑 目录导航</div>
+                    <div id="tocList" class="space-y-0.5">
+                        <!-- JS 自动生成目录 -->
                     </div>
-                    <button onclick="closeModal()" class="w-8 h-8 rounded-full hover:bg-gray-100 flex items-center justify-center text-gray-500 flex-shrink-0 transition-colors">
-                        ✕
-                    </button>
+                </aside>
+
+                <!-- 右侧内容区 -->
+                <div id="modalContent" class="flex-1 px-8 py-8 overflow-y-auto content-scroll bg-white/60">
+                    <!-- JS 动态填充 -->
                 </div>
             </div>
-            
-            <!-- 分隔线 -->
-            <div class="mx-8 h-px bg-gradient-to-r from-transparent via-green-200 to-transparent"></div>
 
-            <!-- 只读内容区 -->
-            <div id="modalContent" class="px-6 md:px-10 py-8 overflow-y-auto read-only-content flex-1 bg-white/60">
-                <!-- JS 动态填充 -->
-            </div>
-
-            <!-- 底部只读标识 -->
-            <div class="px-8 py-4 text-center text-xs text-gray-400 border-t border-green-50 bg-green-50/50">
-                只读模式 · 内容来自 GitHub 仓库 · 不可修改
+            <!-- 底部状态栏 -->
+            <div class="px-8 py-3 text-center text-xs text-gray-400 border-t border-green-50 bg-green-50/70 flex-shrink-0">
+                只读模式 · 内容来自 GitHub 仓库 · 不可修改 · 按 ESC 关闭
             </div>
         </div>
     </div>
 
     <script>
         // ==============================================
-        // ========== 🔧 仓库配置区（在这里填写） ==========
+        // ========== 🔧 仓库配置区 ==========
         // ==============================================
         const REPO_CONFIG = [
             {
@@ -492,40 +539,32 @@
             }
         ];
 
-        // 公开仓库无需 Token，保持为空即可
         const GITHUB_TOKEN = '';
         const API_BASE = 'https://api.github.com';
         // ==============================================
 
-        // 当前浏览状态
         let currentRepoKey = '';
         let currentPath = '';
 
         // ========== 工具函数 ==========
-        // 生成文件的 GitHub Raw 直链
         function getRawUrl(repoKey, filePath) {
             const repo = REPO_CONFIG.find(r => r.key === repoKey);
             if (!repo) return '';
             return `https://raw.githubusercontent.com/${repo.owner}/${repo.repo}/${repo.branch}/${filePath}`;
         }
 
-        // 解析 Markdown 内的相对路径图片，替换为绝对直链
         function resolveMarkdownImages(markdown, repoKey, currentFilePath) {
             const repo = REPO_CONFIG.find(r => r.key === repoKey);
             if (!repo) return markdown;
 
-            // 获取当前文件所在目录
             const dirPath = currentFilePath.includes('/') 
                 ? currentFilePath.substring(0, currentFilePath.lastIndexOf('/')) 
                 : '';
 
-            // 替换所有相对路径图片
             return markdown.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (match, alt, imgPath) => {
-                // 绝对路径、base64 不处理
                 if (imgPath.startsWith('http://') || imgPath.startsWith('https://') || imgPath.startsWith('data:')) {
                     return match;
                 }
-                // 拼接完整路径
                 let fullPath;
                 if (imgPath.startsWith('/')) {
                     fullPath = imgPath.slice(1);
@@ -535,6 +574,58 @@
                 const rawUrl = getRawUrl(repoKey, fullPath);
                 return `![${alt}](${rawUrl})`;
             });
+        }
+
+        // 自动生成目录
+        function generateToc() {
+            const contentEl = document.getElementById('modalContent');
+            const tocEl = document.getElementById('tocList');
+            const headings = contentEl.querySelectorAll('h2, h3');
+            
+            if (headings.length === 0) {
+                tocEl.innerHTML = '<div class="text-sm text-gray-400 px-3 py-2">暂无目录</div>';
+                return;
+            }
+
+            let html = '';
+            headings.forEach((heading, index) => {
+                const id = `heading-${index}`;
+                heading.id = id;
+                const level = heading.tagName.toLowerCase();
+                const text = heading.textContent;
+                html += `<div class="toc-item toc-${level}" onclick="scrollToHeading('${id}')">${text}</div>`;
+            });
+            tocEl.innerHTML = html;
+
+            // 滚动监听高亮当前标题
+            const contentScroll = document.getElementById('modalContent');
+            contentScroll.onscroll = () => {
+                let currentId = '';
+                headings.forEach(heading => {
+                    const rect = heading.getBoundingClientRect();
+                    if (rect.top <= 80) {
+                        currentId = heading.id;
+                    }
+                });
+
+                document.querySelectorAll('.toc-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                if (currentId) {
+                    const activeItem = document.querySelector(`.toc-item[onclick="scrollToHeading('${currentId}')"]`);
+                    if (activeItem) activeItem.classList.add('active');
+                }
+            };
+        }
+
+        function scrollToHeading(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                document.getElementById('modalContent').scrollTo({
+                    top: el.offsetTop - 20,
+                    behavior: 'smooth'
+                });
+            }
         }
 
         // ========== GitHub API 封装 ==========
@@ -551,7 +642,6 @@
             return res.json();
         }
 
-        // 获取指定路径下的目录/文件列表
         async function getRepoContents(repoKey, path = '') {
             const repo = REPO_CONFIG.find(r => r.key === repoKey);
             if (!repo) return [];
@@ -560,7 +650,6 @@
             const url = `${API_BASE}/repos/${repo.owner}/${repo.repo}/contents/${encodeURIComponent(fullPath)}?ref=${repo.branch}`;
             const data = await githubRequest(url);
             
-            // 排序：文件夹在前，文件在后
             return data.sort((a, b) => {
                 if (a.type === 'dir' && b.type === 'file') return -1;
                 if (a.type === 'file' && b.type === 'dir') return 1;
@@ -568,7 +657,6 @@
             });
         }
 
-        // 获取单个文件内容并解码
         async function getFileContent(repoKey, path) {
             const repo = REPO_CONFIG.find(r => r.key === repoKey);
             if (!repo) return '';
@@ -577,7 +665,6 @@
             const data = await githubRequest(url);
             
             if (data.encoding === 'base64') {
-                // 兼容中文解码
                 return decodeURIComponent(escape(window.atob(data.content)));
             }
             return data.content || '';
@@ -590,13 +677,11 @@
             renderSidebar();
         };
 
-        // 渲染主界面统计
         function renderLandingStats() {
             document.getElementById('totalRepoCount').textContent = REPO_CONFIG.length;
             document.getElementById('statRepoCount').textContent = REPO_CONFIG.length;
         }
 
-        // 渲染首页仓库卡片
         function renderHomeRepoCards() {
             const grid = document.getElementById('repoCardGrid');
             grid.innerHTML = '';
@@ -618,7 +703,6 @@
             });
         }
 
-        // 渲染侧边栏菜单
         function renderSidebar() {
             const nav = document.getElementById('sidebarNav');
             nav.innerHTML = '';
@@ -711,7 +795,6 @@
                 const list = await getRepoContents(currentRepoKey, currentPath);
                 grid.innerHTML = '';
 
-                // 非根目录显示返回上级
                 if (currentPath && currentPath !== REPO_CONFIG.find(r=>r.key===currentRepoKey).rootPath) {
                     const backCard = document.createElement('div');
                     backCard.className = 'book-card glass-card rounded-2xl p-6 flex flex-col items-center justify-center text-center min-h-[200px]';
@@ -728,7 +811,6 @@
                     card.className = 'book-card glass-card rounded-2xl overflow-hidden';
                     
                     if (item.type === 'dir') {
-                        // 文件夹
                         card.innerHTML = `
                             <div class="h-32 bg-gradient-to-br from-amber-200/60 to-amber-400/60 flex items-center justify-center text-white text-4xl">
                                 📁
@@ -741,7 +823,6 @@
                         card.onclick = () => enterDir(item.path);
                         grid.appendChild(card);
                     } else {
-                        // 支持查看的文件
                         const isViewable = /\.(md|txt|js|css|html|json|vue|py|java|go|ts|jsx|tsx|yml|yaml|conf|ini|png|jpg|jpeg|gif|webp|svg|bmp)$/i.test(item.name);
                         if (!isViewable) return;
 
@@ -772,7 +853,6 @@
             }
         }
 
-        // 渲染路径面包屑
         function renderBreadcrumb() {
             const breadcrumb = document.getElementById('pathBreadcrumb');
             const repo = REPO_CONFIG.find(r => r.key === currentRepoKey);
@@ -816,47 +896,45 @@
             loadShelfData();
         }
 
-        // ========== 文档/图片详情弹窗 ==========
+        // ========== 文档弹窗 ==========
         async function openDocFile(filePath, fileName) {
             const repo = REPO_CONFIG.find(r => r.key === currentRepoKey);
             
             document.getElementById('modalTitle').textContent = fileName;
             document.getElementById('modalMeta').textContent = `${repo.name} · ${filePath}`;
-            document.getElementById('modalContent').innerHTML = '<div class="text-center text-gray-500 py-10">加载中...</div>';
+            document.getElementById('modalContent').innerHTML = '<div class="text-center text-gray-500 py-20">加载中...</div>';
+            document.getElementById('tocList').innerHTML = '';
 
             const modal = document.getElementById('docModal');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
 
             try {
-                // 图片文件直接渲染
                 const isImage = /\.(png|jpg|jpeg|gif|webp|svg|bmp)$/i.test(fileName);
                 if (isImage) {
                     const imgUrl = getRawUrl(currentRepoKey, filePath);
                     document.getElementById('modalContent').innerHTML = `
-                        <div class="flex justify-center items-center">
-                            <img src="${imgUrl}" alt="${fileName}" class="max-w-full max-h-[70vh] rounded-lg shadow-md">
+                        <div class="flex justify-center items-center h-full">
+                            <img src="${imgUrl}" alt="${fileName}" class="max-w-full max-h-[75vh] rounded-lg shadow-md">
                         </div>
                     `;
                     return;
                 }
 
-                // Markdown 文件渲染
                 const isMarkdown = /\.md$/i.test(fileName);
                 const content = await getFileContent(currentRepoKey, filePath);
 
                 if (isMarkdown) {
-                    // 解析相对路径图片
                     const resolvedContent = resolveMarkdownImages(content, currentRepoKey, filePath);
-                    // 渲染为 HTML
                     const html = marked.parse(resolvedContent);
                     document.getElementById('modalContent').innerHTML = `<div class="markdown-body">${html}</div>`;
+                    // 渲染完生成目录
+                    setTimeout(generateToc, 0);
                 } else {
-                    // 其他文本文件保持纯文本
-                    document.getElementById('modalContent').innerHTML = `<pre class="bg-gray-50 p-4 rounded-lg overflow-x-auto text-sm">${content}</pre>`;
+                    document.getElementById('modalContent').innerHTML = `<pre class="bg-gray-50 p-6 rounded-lg overflow-x-auto text-sm">${content}</pre>`;
                 }
             } catch (err) {
-                document.getElementById('modalContent').innerHTML = `<div class="text-red-500 text-center py-10">文件读取失败：${err.message}</div>`;
+                document.getElementById('modalContent').innerHTML = `<div class="text-red-500 text-center py-20">文件读取失败：${err.message}</div>`;
             }
         }
 
