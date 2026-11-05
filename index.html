@@ -1,1022 +1,186 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>DocMap · 知识地图 · 通天建木</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body {
-    height: 100%;
-    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
-    background: #081c22;
-    color: #e6f7f4;
-    overflow: hidden;
-  }
-
-  /* ========== 夏日通天建木背景 ========== */
-  .bg-tree {
-    position: fixed; inset: 0;
-    background:
-      radial-gradient(ellipse at 50% 10%, rgba(120,220,180,0.22), transparent 50%),
-      radial-gradient(ellipse at 20% 85%, rgba(70,180,210,0.18), transparent 45%),
-      radial-gradient(ellipse at 80% 88%, rgba(90,200,160,0.16), transparent 45%),
-      linear-gradient(180deg, #0b2b33 0%, #081c22 60%, #06161a 100%);
-    z-index: 0;
-  }
-  .bg-tree::before{
-    content:"";
-    position:absolute; inset:0;
-    background-image:
-      radial-gradient(circle at 50% 50%, rgba(140,230,200,0.06) 1px, transparent 1px);
-    background-size: 36px 36px;
-    mask-image: radial-gradient(ellipse at center, black 40%, transparent 75%);
-  }
-  /* 建木主干svg放在背景层 */
-  .tree-svg {
-    position: fixed;
-    inset:0;
-    width:100%;
-    height:100%;
-    z-index:1;
-    pointer-events:none;
-    opacity:0.75;
-  }
-  .particles{
-    position:fixed; inset:0; z-index:2; pointer-events:none;
-  }
-
-  /* ============ 视图容器 ============ */
-  .stage{
-    position: relative;
-    width: 100%;
-    height: 100%;
-    z-index: 3;
-  }
-  .view{
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    transition: transform 0.9s cubic-bezier(0.65, 0, 0.35, 1), opacity 0.6s ease;
-    overflow: auto;
-  }
-  .view.hidden-up{
-    transform: translateY(-100%);
-    opacity: 0;
-    pointer-events: none;
-  }
-  .view.hidden-down{
-    transform: translateY(100%);
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  /* ============ 封面 ============ */
-  .cover{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 40px 24px;
-    touch-action: none;
-  }
-  .cover-mark{
-    position: absolute;
-    top: 24px; left: 24px;
-    display:flex; align-items:center; gap:10px;
-    color: #98c9c0;
-    font-size: 14px;
-  }
-  .cover-mark .logo-dot{
-    width:10px; height:10px; border-radius:50%;
-    background: linear-gradient(135deg,#34d399,#22d3ee);
-    box-shadow: 0 0 18px rgba(52,211,153,0.7);
-  }
-  .cover-title{
-    font-size: clamp(44px, 7vw, 96px);
-    font-weight: 800;
-    letter-spacing: 2px;
-    background: linear-gradient(120deg,#a7f3d0 0%,#67e8f9 40%,#5eead4 80%,#a7f3d0 100%);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    animation: shine 6s linear infinite;
-    margin-bottom: 18px;
-  }
-  .cover-sub{
-    font-size: clamp(14px, 1.4vw, 18px);
-    color: #98c9c0;
-    max-width: 640px;
-    line-height: 1.8;
-    margin-bottom: 40px;
-  }
-  .cover-enter{
-    cursor: pointer;
-    padding: 16px 34px;
-    border-radius: 999px;
-    border: 1px solid rgba(255,255,255,0.12);
-    background: linear-gradient(135deg, rgba(52,211,153,0.32), rgba(34,211,238,0.32));
-    color: #fff;
-    font-size: 15px;
-    letter-spacing: 4px;
-    backdrop-filter: blur(14px);
-    box-shadow: 0 10px 40px rgba(52,211,153,0.3);
-    transition: transform 0.4s ease, box-shadow 0.4s ease;
-  }
-  .cover-enter:hover{
-    transform: translateY(-4px);
-    box-shadow: 0 18px 60px rgba(34,211,238,0.42);
-  }
-  .cover-hint{
-    position: absolute;
-    bottom: 40px;
-    left: 50%;
-    transform: translateX(-50%);
-    color: #74b8aa;
-    font-size: 13px;
-    letter-spacing: 2px;
-    animation: bounce 2s infinite;
-  }
-  @keyframes shine{
-    to{ background-position: 200% center; }
-  }
-  @keyframes bounce{
-    0%,100%{ transform: translate(-50%, 0); }
-    50%{ transform: translate(-50%, -10px); }
-  }
-
-  /* ============ 顶部导航 ============ */
-  .topbar{
-    position: sticky;
-    top: 0;
-    z-index: 30;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 14px 24px;
-    background: rgba(8, 28, 34, 0.58);
-    backdrop-filter: blur(14px);
-    border-bottom: 1px solid rgba(167,243,208,0.08);
-  }
-  .topbar-left, .topbar-right{
-    display:flex; align-items:center; gap:14px;
-  }
-  .back-btn{
-    cursor: pointer;
-    padding: 8px 14px;
-    border-radius: 999px;
-    border: 1px solid rgba(255,255,255,0.08);
-    background: rgba(255,255,255,0.04);
-    color: #b9eae0;
-    font-size: 13px;
-    transition: all 0.3s;
-  }
-  .back-btn:hover{
-    background: rgba(52,211,153,0.15);
-    border-color: rgba(52,211,153,0.4);
-    color: #fff;
-  }
-  .topbar-title{
-    font-size: 18px;
-    font-weight: 700;
-    background: linear-gradient(120deg,#a7f3d0,#67e8f9);
-    -webkit-background-clip:text;
-    background-clip:text;
-    color: transparent;
-  }
-  .icon-btn{
-    width: 38px; height: 38px;
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.08);
-    background: rgba(255,255,255,0.04);
-    color: #b9eae0;
-    cursor: pointer;
-    transition: all 0.3s;
-  }
-  .icon-btn:hover{
-    background: rgba(52,211,153,0.18);
-    color: #fff;
-    border-color: rgba(52,211,153,0.4);
-  }
-
-  /* ============ 建木树形地图页【重点】 ============ */
-  .map-page{ padding-bottom: 60px; }
-  .map-header{
-    padding: 24px 24px 10px;
-    display:flex; justify-content:space-between; align-items:flex-end;
-    flex-wrap:wrap; gap:16px;
-  }
-  .map-title{
-    font-size: clamp(28px, 3vw, 40px);
-    font-weight: 800;
-    letter-spacing: 1px;
-  }
-  .map-title span{
-    background: linear-gradient(120deg,#a7f3d0,#67e8f9);
-    -webkit-background-clip:text;
-    background-clip:text;
-    color: transparent;
-  }
-  .map-desc{
-    color: #98c9c0;
-    margin-top: 8px;
-    font-size: 14px;
-  }
-  .map-legend{
-    display:flex; gap:10px; flex-wrap:wrap;
-    background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(167,243,208,0.08);
-    padding: 10px 14px;
-    border-radius: 14px;
-    backdrop-filter: blur(12px);
-  }
-  .legend-item{
-    display:flex; align-items:center; gap:8px;
-    font-size: 13px; color: #b9eae0;
-  }
-  .legend-dot{
-    width: 10px; height: 10px; border-radius: 4px;
-  }
-
-  /* 树形容器，代替原来网格 */
-  .tree-map-wrap{
-    position: relative;
-    width: 100%;
-    min-height: 72vh;
-    padding: 30px 20px;
-  }
-  .tree-node{
-    position:absolute;
-    border-radius: 20px;
-    padding: 18px;
-    cursor: pointer;
-    overflow: hidden;
-    color: #fff;
-    border: 1px solid rgba(255,255,255,0.12);
-    box-shadow: 0 10px 32px rgba(0,0,0,0.32);
-    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.4s ease;
-    min-width:180px;
-  }
-  .tree-node::before{
-    content:"";
-    position:absolute; inset:0;
-    background: radial-gradient(circle at 0% 0%, rgba(255,255,255,0.22), transparent 40%);
-    pointer-events:none;
-  }
-  .tree-node:hover{
-    transform: translateY(-6px) scale(1.02);
-    box-shadow: 0 22px 50px rgba(0,0,0,0.45);
-    border-color: rgba(255,255,255,0.25);
-  }
-  .tree-node .folder-name{
-    font-size: 20px;
-    font-weight: 800;
-    letter-spacing: 1px;
-    position: relative;
-    z-index: 2;
-  }
-  .tree-node .folder-desc{
-    font-size:13px;
-    opacity:0.85;
-    margin:8px 0 12px;
-    position:relative;z-index:2;
-  }
-  .tree-node .folder-meta{
-    display:flex; justify-content:space-between; align-items:center;
-    position: relative;
-    z-index: 2;
-  }
-  .tree-node .folder-count{
-    font-size: 13px;
-    opacity: 0.9;
-  }
-  .tree-node .folder-size{
-    font-size: 12px;
-    padding: 4px 10px;
-    border-radius: 999px;
-    background: rgba(255,255,255,0.18);
-    backdrop-filter: blur(8px);
-  }
-
-  /* 节点配色，夏日清新 */
-  .node-indigo{ background: linear-gradient(135deg,#3b82f6,#8b5cf6); }
-  .node-violet{ background: linear-gradient(135deg,#8b5cf6,#a855f7); }
-  .node-cyan{ background: linear-gradient(135deg,#06b6d4,#22d3ee); }
-  .node-emerald{ background: linear-gradient(135deg,#10b981,#34d399); }
-  .node-amber{ background: linear-gradient(135deg,#f59e0b,#fbbf24); }
-  .node-rose{ background: linear-gradient(135deg,#f43f5e,#fb7185); }
-  .node-sky{ background: linear-gradient(135deg,#0ea5e9,#38bdf8); }
-
-  /* ============ 书架页 ============ */
-  .shelf-page{ padding-bottom: 60px; }
-  .shelf-header{
-    padding: 24px 24px 0;
-    display:flex; justify-content:space-between; align-items:flex-end;
-    flex-wrap:wrap; gap:16px;
-  }
-  .shelf-title{
-    font-size: clamp(26px, 2.4vw, 34px);
-    font-weight: 800;
-    letter-spacing: 1px;
-  }
-  .shelf-title span{
-    background: linear-gradient(120deg,#a7f3d0,#67e8f9);
-    -webkit-background-clip:text;
-    background-clip:text;
-    color: transparent;
-  }
-  .shelf-desc{ color: #98c9c0; margin-top: 6px; font-size: 14px; }
-  .shelf-tools{
-    display:flex; gap:10px;
-  }
-  .shelf-tools .icon-btn{ width: 42px; height: 42px; }
-
-  .shelf{
-    margin: 24px;
-    padding: 24px;
-    border-radius: 24px;
-    background:
-      linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)),
-      rgba(10,30,36,0.6);
-    border: 1px solid rgba(167,243,208,0.08);
-    box-shadow: inset 0 0 40px rgba(0,0,0,0.35);
-  }
-  .shelf-row{
-    display:flex;
-    gap: 18px;
-    overflow-x: auto;
-    padding: 14px 4px 20px;
-    border-bottom: 3px solid rgba(167,243,208,0.08);
-    margin-bottom: 18px;
-  }
-  .shelf-row:last-child{ margin-bottom: 0; border-bottom: none; }
-
-  .book{
-    flex: 0 0 160px;
-    height: 240px;
-    border-radius: 10px 18px 18px 10px;
-    position: relative;
-    cursor: pointer;
-    overflow: hidden;
-    box-shadow:
-      inset -10px 0 20px rgba(0,0,0,0.35),
-      0 18px 30px rgba(0,0,0,0.45);
-    transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
-    display:flex; align-items:flex-end;
-  }
-  .book:hover{
-    transform: translateY(-14px) rotate(-1.2deg);
-  }
-  .book-spine{
-    position: absolute;
-    left: 0; top: 0; bottom: 0;
-    width: 30px;
-    background: rgba(0,0,0,0.25);
-    border-right: 2px solid rgba(255,255,255,0.18);
-  }
-  .book-cover{
-    position: absolute; inset: 0;
-    padding: 14px;
-    display:flex; flex-direction:column; justify-content:space-between;
-    color: #fff;
-  }
-  .book-cover .book-tag{
-    font-size: 11px;
-    letter-spacing: 2px;
-    opacity: 0.85;
-  }
-  .book-cover .book-name{
-    font-size: 15px;
-    font-weight: 800;
-    line-height: 1.4;
-    writing-mode: vertical-rl;
-    text-orientation: mixed;
-    margin-left: auto;
-    margin-right: 4px;
-    max-height: 160px;
-  }
-  .book-cover .book-footer{
-    font-size: 11px;
-    opacity: 0.8;
-    display:flex; justify-content:space-between;
-  }
-  .book .shine{
-    position:absolute; top:0; left:-40%;
-    width: 60%; height: 100%;
-    background: linear-gradient(120deg, transparent, rgba(255,255,255,0.25), transparent);
-    transform: skewX(-20deg);
-    transition: left 0.7s ease;
-  }
-  .book:hover .shine{ left: 130%; }
-
-  /* 书本封面配色 夏日清新 */
-  .book-1{ background: linear-gradient(160deg,#164e63,#155e75,#0891b2); }
-  .book-2{ background: linear-gradient(160deg,#065f46,#047857,#10b981); }
-  .book-3{ background: linear-gradient(160deg,#1e40af,#1d4ed8,#3b82f6); }
-  .book-4{ background: linear-gradient(160deg,#4c1d95,#5b21b6,#8b5cf6); }
-  .book-5{ background: linear-gradient(160deg,#9a3412,#b45309,#f59e0b); }
-  .book-6{ background: linear-gradient(160deg,#164e63,#155e75,#0891b2); }
-  .book-7{ background: linear-gradient(160deg,#065f46,#047857,#10b981); }
-  .book-8{ background: linear-gradient(160deg,#1e40af,#1d4ed8,#3b82f6); }
-  .book-9{ background: linear-gradient(160deg,#4c1d95,#5b21b6,#8b5cf6); }
-  .book-10{ background: linear-gradient(160deg,#9a3412,#b45309,#f59e0b); }
-  .book-11{ background: linear-gradient(160deg,#9f1239,#be123c,#f43f5e); }
-  .book-12{ background: linear-gradient(160deg,#0369a1,#0284c7,#0ea5e9); }
-
-  /* ============ 阅读页 ============ */
-  .reader-page{
-    padding: 40px 24px 80px;
-    max-width: 960px;
-    margin: 0 auto;
-  }
-  .reader-header{
-    margin-bottom: 28px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid rgba(167,243,208,0.08);
-  }
-  .reader-category{
-    font-size: 13px;
-    color: #98c9c0;
-    margin-bottom: 10px;
-  }
-  .reader-title{
-    font-size: clamp(28px, 3vw, 42px);
-    font-weight: 800;
-    line-height: 1.3;
-    margin-bottom: 14px;
-    background: linear-gradient(120deg,#fff,#a7f3d0);
-    -webkit-background-clip:text;
-    background-clip:text;
-    color: transparent;
-  }
-  .reader-meta{
-    display:flex; gap:16px; flex-wrap:wrap;
-    color: #98c9c0;
-    font-size: 13px;
-  }
-  .reader-content{
-    font-size: 16px;
-    line-height: 1.9;
-    color: #d1f0e9;
-  }
-  .reader-content h2{
-    margin: 34px 0 16px;
-    font-size: 22px;
-    color: #fff;
-    padding-bottom: 10px;
-    border-bottom: 1px solid rgba(167,243,208,0.08);
-  }
-  .reader-content p{ margin-bottom: 16px; }
-  .reader-content code{
-    background: rgba(255,255,255,0.08);
-    padding: 2px 8px;
-    border-radius: 6px;
-    font-size: 14px;
-    color: #5eead4;
-  }
-  .reader-content blockquote{
-    border-left: 4px solid #34d399;
-    padding: 14px 18px;
-    background: rgba(52,211,153,0.12);
-    border-radius: 0 12px 12px 0;
-    margin: 20px 0;
-    color: #b9eae0;
-  }
-
-  /* ============ 滚动条 ============ */
-  ::-webkit-scrollbar{ width: 10px; height: 10px; }
-  ::-webkit-scrollbar-thumb{
-    background: rgba(167,243,208,0.16);
-    border-radius: 10px;
-  }
-  ::-webkit-scrollbar-thumb:hover{ background: rgba(167,243,208,0.28); }
-  ::-webkit-scrollbar-track{ background: transparent; }
-
-  /* ============ 响应式 ============ */
-  @media (max-width: 900px){
-    .tree-node{ position:relative !important; display:block; margin:16px auto; max-width:340px; left:unset !important; top:unset !important; }
-    .book{ flex: 0 0 140px; height: 210px; }
-  }
-  @media (max-width: 600px){
-    .book{ flex: 0 0 120px; height: 190px; }
-  }
-</style>
-</head>
-<body>
-
-<div class="bg-tree"></div>
-<!-- 通天建木主干SVG -->
-<svg class="tree-svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
-  <!-- 主干 -->
-  <path d="M960 1080 C960 800, 940 550, 960 320 C980 140, 960 40, 960 0" fill="none" stroke="#34d399" stroke-width="14" stroke-linecap="round" opacity="0.35"/>
-  <!-- 分支 -->
-  <path d="M960 760 C820 740, 700 660, 620 560" fill="none" stroke="#22d3ee" stroke-width="7" stroke-linecap="round" opacity="0.28"/>
-  <path d="M960 620 C1100 600, 1240 530, 1340 440" fill="none" stroke="#22d3ee" stroke-width="7" stroke-linecap="round" opacity="0.28"/>
-  <path d="M960 500 C840 480, 740 400, 660 310" fill="none" stroke="#34d399" stroke-width="6" stroke-linecap="round" opacity="0.26"/>
-  <path d="M960 400 C1080 380, 1180 310, 1260 230" fill="none" stroke="#34d399" stroke-width="6" stroke-linecap="round" opacity="0.26"/>
-  <path d="M960 300 C870 280, 790 210, 720 130" fill="none" stroke="#5eead4" stroke-width="5" stroke-linecap="round" opacity="0.24"/>
-  <path d="M960 220 C1040 200, 1120 140, 1180 70" fill="none" stroke="#5eead4" stroke-width="5" stroke-linecap="round" opacity="0.24"/>
-  <!-- 叶子光点 -->
-  <circle cx="620" cy="560" r="4" fill="#5eead4" opacity="0.7"/>
-  <circle cx="1340" cy="440" r="4" fill="#5eead4" opacity="0.7"/>
-  <circle cx="660" cy="310" r="3.5" fill="#34d399" opacity="0.7"/>
-  <circle cx="1260" cy="230" r="3.5" fill="#34d399" opacity="0.7"/>
-  <circle cx="720" cy="130" r="3" fill="#22d3ee" opacity="0.7"/>
-  <circle cx="1180" cy="70" r="3" fill="#22d3ee" opacity="0.7"/>
-</svg>
-<canvas class="particles" id="particles"></canvas>
-
-<div class="stage" id="stage">
-
-  <!-- ========== 封面层 ========== -->
-  <section class="view cover" id="coverView">
-    <div class="cover-mark">
-      <span class="logo-dot"></span>
-      <span>DocMap · 通天建木知识库</span>
-    </div>
-    <h1 class="cover-title">DocMap · 通天建木</h1>
-    <p class="cover-sub">
-      知识如同建木，主干扎根，枝桠生长，每一片枝叶都是你的笔记。<br>
-      沿着枝干探索，翻开属于你的夏日知识库。
-    </p>
-    <button class="cover-enter" onclick="enterMap()">进入建木地图 →</button>
-    <div class="cover-hint">上滑进入建木主界面</div>
-  </section>
-
-  <!-- ========== 建木树形地图层 ========== -->
-  <section class="view map-page hidden-up" id="mapView">
-    <div class="topbar">
-      <div class="topbar-left">
-        <button class="back-btn" onclick="backToCover()">← 返回封面</button>
-        <div class="topbar-title">DocMap · 通天建木</div>
-      </div>
-      <div class="topbar-right">
-        <button class="icon-btn" title="搜索"><i class="fas fa-search"></i></button>
-        <button class="icon-btn" title="同步"><i class="fas fa-sync-alt"></i></button>
-      </div>
-    </div>
-
-    <div class="map-header">
-      <div>
-        <div class="map-title">我的 <span>建木知识地图</span></div>
-        <div class="map-desc">知识沿着建木枝干生长，点击枝叶节点进入书架</div>
-      </div>
-      <div class="map-legend" id="mapLegend"></div>
-    </div>
-
-    <div class="tree-map-wrap" id="treeWrap">
-      <!-- JS 动态生成树形节点，定位在枝干末端 -->
-    </div>
-  </section>
-
-  <!-- ========== 书架层 ========== -->
-  <section class="view shelf-page hidden-up" id="shelfView">
-    <div class="topbar">
-      <div class="topbar-left">
-        <button class="back-btn" onclick="backToMap()">← 返回建木地图</button>
-        <div class="topbar-title" id="shelfTopTitle">书架</div>
-      </div>
-      <div class="topbar-right">
-        <button class="icon-btn" title="搜索"><i class="fas fa-search"></i></button>
-        <button class="icon-btn" title="新建文档"><i class="fas fa-plus"></i></button>
-      </div>
-    </div>
-
-    <div class="shelf-header">
-      <div>
-        <div class="shelf-title"><span id="shelfFolderName">前端开发</span> · 枝叶书架</div>
-        <div class="shelf-desc" id="shelfFolderDesc">按更新时间陈列文档，点击书本打开阅读</div>
-      </div>
-      <div class="shelf-tools">
-        <button class="icon-btn" title="按名称"><i class="fas fa-font"></i></button>
-        <button class="icon-btn" title="按时间"><i class="fas fa-clock"></i></button>
-      </div>
-    </div>
-
-    <div class="shelf" id="shelfBody"></div>
-  </section>
-
-  <!-- ========== 阅读层 ========== -->
-  <section class="view reader-page hidden-up" id="readerView">
-    <div class="topbar">
-      <div class="topbar-left">
-        <button class="back-btn" onclick="backToShelf()">← 返回书架</button>
-        <div class="topbar-title" id="readerTopTitle">文档阅读</div>
-      </div>
-      <div class="topbar-right">
-        <button class="icon-btn" title="收藏"><i class="far fa-star"></i></button>
-        <button class="icon-btn" title="编辑"><i class="fas fa-pen"></i></button>
-      </div>
-    </div>
-
-    <div class="reader-header">
-      <div class="reader-category" id="readerCategory">前端开发 / JavaScript</div>
-      <h1 class="reader-title" id="readerTitle">JavaScript 基础入门</h1>
-      <div class="reader-meta">
-        <span><i class="far fa-calendar-alt"></i> <span id="readerDate">2025-03-18</span></span>
-        <span><i class="far fa-clock"></i> 约 <span id="readerMinutes">6</span> 分钟阅读</span>
-        <span><i class="far fa-eye"></i> <span id="readerViews">1,280</span> 次浏览</span>
-      </div>
-    </div>
-
-    <div class="reader-content" id="readerContent"></div>
-  </section>
-
-</div>
-
-<script>
-  // ========== 当前页面状态 ==========
-  let currentView = 'cover';
-  let isAnimating = false;
-
-  // ========== 模拟数据 ==========
-  const folders = [
-    { id: "frontend", name: "前端开发", desc: "HTML、CSS、JavaScript 与框架笔记", size: 42, color: "node-indigo", legend: "前端开发", pos:{left:"14%", top:"42%"} },
-    { id: "backend", name: "后端技术", desc: "Node.js、MySQL、接口设计", size: 35, color: "node-violet", legend: "后端技术", pos:{left:"74%", top:"34%"} },
-    { id: "tool", name: "效率工具", desc: "Git、VSCode、自动化脚本", size: 28, color: "node-cyan", legend: "效率工具", pos:{left:"20%", top:"58%"} },
-    { id: "book", name: "读书笔记", desc: "编程书籍与学习摘录", size: 23, color: "node-emerald", legend: "读书笔记", pos:{left:"70%", top:"52%"} },
-    { id: "project", name: "项目笔记", desc: "项目复盘与架构整理", size: 18, color: "node-amber", legend: "项目笔记", pos:{left:"26%", top:"24%"} },
-    { id: "ai", name: "AI 笔记", desc: "AI 工具、Prompt 与实践", size: 14, color: "node-rose", legend: "AI 笔记", pos:{left:"64%", top:"20%"} },
-    { id: "sec", name: "安全笔记", desc: "前端安全与权限管理", size: 9, color: "node-sky", legend: "安全笔记", pos:{left:"42%", top:"16%"} }
-  ];
-
-  const docs = {
-    frontend: [
-      { id: "js-basics", name: "JavaScript 基础入门", tag: "JS", color: "book-1", date: "2025-03-18", minutes: 6, views: 1280, category: "前端开发 / JavaScript", content: `
-        <h2>一、变量与数据类型</h2>
-        <p>JavaScript 中可以使用 <code>let</code> 和 <code>const</code> 声明变量。<code>let</code> 用于可变变量，<code>const</code> 用于常量。</p>
-        <blockquote>良好的变量命名可以显著提升代码可读性，建议使用名词或名词短语。</blockquote>
-        <h2>二、函数基础</h2>
-        <p>函数是一段可复用的代码块。在 JavaScript 中，函数可以声明式定义，也可以写成箭头函数。</p>
-        <h2>三、作用域与闭包</h2>
-        <p>作用域决定了变量在哪些地方可以被访问。闭包是函数能够记住并访问其词法作用域的能力。</p>
-      ` },
-      { id: "css-animation", name: "CSS 动画进阶", tag: "CSS", color: "book-2", date: "2025-03-12", minutes: 5, views: 980, category: "前端开发 / CSS", content: `
-        <h2>一、过渡动画</h2>
-        <p><code>transition</code> 可以让属性变化平滑发生，常用于 hover、focus 和状态切换。</p>
-        <h2>二、关键帧动画</h2>
-        <p><code>@keyframes</code> 可以定义多阶段动画，适合复杂运动轨迹。</p>
-        <h2>三、性能建议</h2>
-        <blockquote>优先使用 transform 和 opacity，它们更适合 GPU 加速。</blockquote>
-      ` },
-      { id: "vue3", name: "Vue3 核心笔记", tag: "VUE", color: "book-3", date: "2025-03-08", minutes: 8, views: 1460, category: "前端开发 / Vue", content: `
-        <h2>一、Composition API</h2>
-        <p>Vue3 推荐使用 Composition API 组织逻辑，代码复用性更强。</p>
-        <h2>二、响应式原理</h2>
-        <p>Vue3 基于 Proxy 实现响应式，能够更精确地追踪对象变化。</p>
-      ` },
-      { id: "react", name: "React 实战整理", tag: "REACT", color: "book-4", date: "2025-02-28", minutes: 7, views: 1120, category: "前端开发 / React", content: `
-        <h2>一、常用 Hooks</h2>
-        <p><code>useState</code>、<code>useEffect</code>、<code>useContext</code> 是 React 开发的基础工具。</p>
-        <h2>二、状态提升</h2>
-        <p>多个组件需要共享数据时，可以将状态提升到共同父组件。</p>
-      ` },
-      { id: "ts", name: "TypeScript 技巧", tag: "TS", color: "book-5", date: "2025-02-20", minutes: 6, views: 860, category: "前端开发 / TypeScript", content: `
-        <h2>一、基础类型</h2>
-        <p>TypeScript 为 JavaScript 添加了静态类型检查，能在编译前发现错误。</p>
-        <h2>二、泛型</h2>
-        <p>泛型可以让函数、接口和类型在保证类型安全的前提下复用。</p>
-      ` }
-    ],
-    backend: [
-      { id: "node-api", name: "Node.js 接口开发", tag: "NODE", color: "book-6", date: "2025-03-15", minutes: 9, views: 1080, category: "后端技术 / Node.js", content: `
-        <h2>一、路由设计</h2>
-        <p>良好的接口设计应遵循资源命名风格，例如 <code>/users</code>、<code>/articles</code>。</p>
-        <h2>二、中间件</h2>
-        <p>中间件可以统一处理日志、鉴权、异常捕获等横切逻辑。</p>
-      ` },
-      { id: "mysql", name: "MySQL 优化笔记", tag: "SQL", color: "book-7", date: "2025-03-06", minutes: 7, views: 940, category: "后端技术 / MySQL", content: `
-        <h2>一、索引原则</h2>
-        <p>索引能显著提升查询速度，但会增加写入成本。</p>
-        <h2>二、慢查询分析</h2>
-        <p>分析慢查询日志是数据库优化的常用入口。</p>
-      ` }
-    ],
-    tool: [
-      { id: "git", name: "Git 常用命令速查", tag: "GIT", color: "book-8", date: "2025-03-10", minutes: 4, views: 1360, category: "效率工具 / Git", content: `
-        <h2>一、基础命令</h2>
-        <p><code>git add</code>、<code>git commit</code>、<code>git push</code> 是最常用的提交链路。</p>
-        <h2>二、分支管理</h2>
-        <p>分支可以让多个功能并行开发，减少互相干扰。</p>
-      ` },
-      { id: "vscode", name: "VSCode 高效插件", tag: "IDE", color: "book-9", date: "2025-02-25", minutes: 5, views: 760, category: "效率工具 / VSCode", content: `
-        <h2>一、编辑增强</h2>
-        <p>代码补全、跳转定义、重构工具都能提升开发效率。</p>
-        <h2>二、团队配置</h2>
-        <p>统一编辑器配置有助于减少团队协作中的格式差异。</p>
-      ` }
-    ],
-    book: [
-      { id: "clean-code", name: "《代码整洁之道》", tag: "BOOK", color: "book-10", date: "2025-03-02", minutes: 10, views: 1520, category: "读书笔记 / 书籍", content: `
-        <h2>一、命名</h2>
-        <p>变量名、函数名应该回答“为什么存在、做什么、怎么用”。</p>
-        <h2>二、函数</h2>
-        <p>函数应短小、职责单一，并且只做一件事。</p>
-      ` }
-    ],
-    project: [
-      { id: "arch-review", name: "项目架构复盘", tag: "ARCH", color: "book-11", date: "2025-02-18", minutes: 8, views: 680, category: "项目笔记 / 复盘", content: `
-        <h2>一、模块划分</h2>
-        <p>清晰的模块边界是长期维护的基础。</p>
-        <h2>二、数据流</h2>
-        <p>数据流向应尽量清晰，避免组件间隐式通信。</p>
-      ` }
-    ],
-    ai: [
-      { id: "prompt", name: "Prompt 工程实践", tag: "AI", color: "book-12", date: "2025-03-04", minutes: 6, views: 910, category: "AI 笔记 / Prompt", content: `
-        <h2>一、角色设定</h2>
-        <p>明确 AI 角色可以让输出更贴近预期场景。</p>
-        <h2>二、示例引导</h2>
-        <p>少量示例能显著提升输出格式稳定性。</p>
-      ` }
-    ],
-    sec: [
-      { id: "web-sec", name: "前端安全指南", tag: "SEC", color: "book-2", date: "2025-02-15", minutes: 7, views: 640, category: "安全笔记 / Web", content: `
-        <h2>一、XSS</h2>
-        <p>对用户输入进行转义和过滤，是防御 XSS 的关键。</p>
-        <h2>二、CSRF</h2>
-        <p>合理使用 Token 和 SameSite Cookie，可以降低 CSRF 风险。</p>
-      ` }
-    ]
-  };
-
-  // ========== 渲染建木树形节点 ==========
-  function renderMap(){
-    const wrap = document.getElementById("treeWrap");
-    const legend = document.getElementById("mapLegend");
-    const sorted = [...folders].sort((a,b)=> b.size - a.size);
-
-    wrap.innerHTML = sorted.map(f => `
-      <div class="tree-node ${f.color}" style="left:${f.pos.left};top:${f.pos.top}" onclick="openShelf('${f.id}')">
-        <div class="folder-name">${f.name}</div>
-        <div class="folder-desc">${f.desc}</div>
-        <div class="folder-meta">
-          <div class="folder-count">${f.size} 篇文档</div>
-          <div class="folder-size">容量占比 ${getPercent(f.size)}%</div>
-        </div>
-      </div>
-    `).join("");
-
-    legend.innerHTML = sorted.map(f => `
-      <div class="legend-item">
-        <span class="legend-dot" style="background:linear-gradient(135deg,#34d399,#22d3ee);"></span>
-        <span>${f.legend} · ${f.size}篇</span>
-      </div>
-    `).join("");
-  }
-
-  function getPercent(size){
-    const total = folders.reduce((s,f)=> s + f.size, 0);
-    return Math.round(size / total * 100);
-  }
-
-  // ========== 渲染书架 ==========
-  function renderShelf(folderId){
-    const folder = folders.find(f=> f.id === folderId);
-    const list = docs[folderId] || [];
-
-    document.getElementById("shelfFolderName").textContent = folder.name;
-    document.getElementById("shelfFolderDesc").textContent = folder.desc + "，共 " + list.length + " 篇文档";
-    document.getElementById("shelfTopTitle").textContent = folder.name + " · 枝叶书架";
-
-    const rows = [];
-    for(let i = 0; i < list.length; i += 6){
-      rows.push(list.slice(i, i + 6));
-    }
-
-    document.getElementById("shelfBody").innerHTML = rows.map(row => `
-      <div class="shelf-row">
-        ${row.map(d => `
-          <div class="book ${d.color}" onclick="openReader('${folderId}','${d.id}')">
-            <div class="book-spine"></div>
-            <div class="shine"></div>
-            <div class="book-cover">
-              <div class="book-tag">${d.tag}</div>
-              <div class="book-name">${d.name}</div>
-              <div class="book-footer">
-                <span>${d.date.slice(5)}</span>
-                <span>${d.minutes}m</span>
-              </div>
-            </div>
-          </div>
-        `).join("")}
-      </div>
-    `).join("");
-  }
-
-  // ========== 渲染阅读页 ==========
-  function renderReader(folderId, docId){
-    const doc = docs[folderId].find(d => d.id === docId);
-    document.getElementById("readerCategory").textContent = doc.category;
-    document.getElementById("readerTitle").textContent = doc.name;
-    document.getElementById("readerDate").textContent = doc.date;
-    document.getElementById("readerMinutes").textContent = doc.minutes;
-    document.getElementById("readerViews").textContent = doc.views.toLocaleString();
-    document.getElementById("readerTopTitle").textContent = doc.name;
-    document.getElementById("readerContent").innerHTML = doc.content;
-  }
-
-  // ========== 视图切换 ==========
-  function enterMap(){
-    if(isAnimating || currentView !== 'cover') return;
-    isAnimating = true;
-    currentView = 'map';
-    
-    document.getElementById("coverView").classList.add("hidden-up");
-    document.getElementById("mapView").classList.remove("hidden-up");
-    
-    setTimeout(()=> isAnimating = false, 900);
-  }
-
-  function backToCover(){
-    if(isAnimating || currentView !== 'map') return;
-    isAnimating = true;
-    currentView = 'cover';
-    
-    document.getElementById("mapView").classList.add("hidden-up");
-    document.getElementById("coverView").classList.remove("hidden-up");
-    
-    setTimeout(()=> isAnimating = false, 900);
-  }
-
-  function openShelf(folderId){
-    if(isAnimating) return;
-    isAnimating = true;
-    currentView = 'shelf';
-    renderShelf(folderId);
-    
-    document.getElementById("mapView").classList.add("hidden-up");
-    document.getElementById("shelfView").classList.remove("hidden-up");
-    
-    setTimeout(()=> isAnimating = false, 900);
-  }
-
-  function backToMap(){
-    if(isAnimating || currentView !== 'shelf') return;
-    isAnimating = true;
-    currentView = 'map';
-    
-    document.getElementById("shelfView").classList.add("hidden-up");
-    document.getElementById("mapView").classList.remove("hidden-up");
-    
-    setTimeout(()=> isAnimating = false, 900);
-  }
-
-  function openReader(folderId, docId){
-    if(isAnimating) return;
-    isAnimating = true;
-    currentView = 'reader';
-    renderReader(folderId, docId);
-    
-    document.getElementById("shelfView").classList.add("hidden-up");
-    document.getElementById("readerView").classList.remove("hidden-up");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    
-    setTimeout(()=> isAnimating = false, 900);
-  }
-
-  function backToShelf(){
-    if(isAnimating || currentView !== 'reader') return;
-    isAnimating = true;
-    currentView = 'shelf';
-    
-    document.getElementById("readerView").classList.add("hidden-up");
-    document.getElementById("shelfView").classList.remove("hidden-up");
-    
-    setTimeout(()=> isAnimating = false, 900);
-  }
-
-  // ========== 滑动交互（保留上滑功能） ==========
-  let touchStartY = 0;
-  let touchEndY = 0;
-  const SWIPE_THRESHOLD = 60;
-
-  document.addEventListener('touchstart', (e) => {
-    touchStartY = e.touches[0].clientY;
-  }, { passive: true });
-
-  document.addEventListener('touchend', (e) => {
-    touchEndY = e.changedTouches[0].clientY;
-    handleSwipe();
-  }, { passive: true });
-
-  document.addEventListener('wheel', (e) => {
-    if(currentView === 'cover' && e.deltaY > 10){
-      enterMap();
-    }
-    if(currentView === 'map'){
-      const mapEl = document.getElementById('mapView');
-      if(mapEl.scrollTop <= 0 && e.deltaY < -10){
-        backToCover();
-      }
-    }
-    if(currentView === 'shelf'){
-      const shelfEl = document.getElementById('shelfView');
-      if(shelfEl.scrollTop <= 0 && e.deltaY < -10){
-        backToMap();
-      }
-    }
-    if(currentView === 'reader'){
-      const readerEl = document.getElementById('readerView');
-      if(readerEl.scrollTop <= 0 && e.deltaY < -10){
-        backToShelf();
-      }
-    }
-  }, { passive: true });
-
-  function handleSwipe(){
-    const diff = touchStartY - touchEndY;
-    if(Math.abs(diff) < SWIPE_THRESHOLD) return;
-
-    if(currentView === 'cover' && diff > 0){
-      enterMap();
-      return;
-    }
-    if(currentView === 'map'){
-      const mapEl = document.getElementById('mapView');
-      if(mapEl.scrollTop <= 0 && diff < 0){
-        backToCover();
-        return;
-      }
-    }
-    if(currentView === 'shelf'){
-      const shelfEl = document.getElementById('shelfView');
-      if(shelfEl.scrollTop <= 0 && diff < 0){
-        backToMap();
-        return;
-      }
-    }
-    if(currentView === 'reader'){
-      const readerEl = document.getElementById('readerView');
-      if(readerEl.scrollTop <= 0 && diff < 0){
-        backToShelf();
-        return;
-      }
-    }
-  }
-
-  // ========== 夏日粒子（淡青绿色光点） ==========
-  function initParticles(){
-    const canvas = document.getElementById("particles");
-    const ctx = canvas.getContext("2d");
-    let w, h, particles;
-
-    function resize(){
-      w = canvas.width = innerWidth;
-      h = canvas.height = innerHeight;
-    }
-    resize();
-    addEventListener("resize", resize);
-
-    particles = Array.from({length: 55}, ()=> ({
-      x: Math.random()*w,
-      y: Math.random()*h,
-      r: Math.random()*1.5 + 0.35,
-      vx: (Math.random()-0.5)*0.22,
-      vy: (Math.random()-0.5)*0.22,
-      a: Math.random()*0.5 + 0.2
-    }));
-
-    function draw(){
-      ctx.clearRect(0,0,w,h);
-      particles.forEach(p => {
-        p.x += p.vx; p.y += p.vy;
-        if(p.x < 0 || p.x > w) p.vx *= -1;
-        if(p.y < 0 || p.y > h) p.vy *= -1;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-        ctx.fillStyle = `rgba(94,234,212,${p.a})`;
-        ctx.fill();
-      });
-
-      for(let i=0;i<particles.length;i++){
-        for(let j=i+1;j<particles.length;j++){
-          const dx = particles[i].x - particles[j].x;
-          const dy = particles[i].y - particles[j].y;
-          const d = Math.hypot(dx, dy);
-          if(d < 100){
-            ctx.beginPath();
-            ctx.moveTo(particles[i].x, particles[i].y);
-            ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `rgba(94,234,212,${0.14 * (1 - d/100)})`;
-            ctx.lineWidth = 0.5;
-            ctx.stroke();
-          }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编程学习笔记看板</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // 自定义夏日绿色主题
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        summer: {
+                            light: '#f0fdf4',
+                            DEFAULT: '#86efac',
+                            dark: '#16a34a',
+                            deep: '#14532d',
+                        }
+                    }
+                }
+            }
         }
-      }
-      requestAnimationFrame(draw);
-    }
-    draw();
-  }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            /* 玻璃态卡片样式，适配绿色背景 */
+            .glass-card {
+                background: rgba(255, 255, 255, 0.35);
+                backdrop-filter: blur(12px);
+                border: 1px solid rgba(255, 255, 255, 0.6);
+                box-shadow: 0 4px 20px rgba(22, 163, 74, 0.12);
+            }
+            /* 分类图标统一样式 */
+            .category-icon {
+                width: 48px;
+                height: 48px;
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 20px;
+                color: white;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-green-50 via-emerald-100 to-teal-200 p-6 md:p-10">
+    <div class="max-w-7xl mx-auto">
+        <!-- 独立看板统计模块 -->
+        <section class="glass-card rounded-2xl p-6 md:p-8 mb-8">
+            <h2 class="text-xl font-bold text-summer-deep mb-6">📊 学习数据总览</h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
+                <div class="text-center">
+                    <p class="text-3xl font-bold text-summer-dark mb-1">168</p>
+                    <p class="text-sm text-gray-600">总文档数</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-3xl font-bold text-summer-dark mb-1">3</p>
+                    <p class="text-sm text-gray-600">今日新增</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-3xl font-bold text-summer-dark mb-1">12</p>
+                    <p class="text-sm text-gray-600">本周更新</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-3xl font-bold text-summer-dark mb-1">7</p>
+                    <p class="text-sm text-gray-600">分类总数</p>
+                </div>
+            </div>
+            <!-- 进度条统计 -->
+            <div>
+                <div class="flex justify-between text-sm text-gray-600 mb-2">
+                    <span>整体学习进度</span>
+                    <span>68%</span>
+                </div>
+                <div class="w-full bg-white/50 rounded-full h-2.5">
+                    <div class="bg-gradient-to-r from-summer to-summer-dark h-2.5 rounded-full transition-all duration-500" style="width: 68%"></div>
+                </div>
+            </div>
+        </section>
 
-  // ========== 初始化 ==========
-  renderMap();
-  initParticles();
-</script>
+        <!-- 分类卡片区域 -->
+        <section>
+            <h2 class="text-xl font-bold text-summer-deep mb-6">📂 笔记分类</h2>
+            
+            <!-- 第一行 4 个卡片 -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <!-- 前端开发 -->
+                <div class="glass-card rounded-2xl p-6 transition-all hover:scale-105 hover:shadow-lg">
+                    <div class="category-icon bg-blue-500 mb-4">
+                        &lt;/&gt;
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-1">前端开发</h3>
+                    <p class="text-sm text-gray-600 mb-4">HTML、CSS、JavaScript 与框架笔记</p>
+                    <div class="flex justify-between items-end">
+                        <span class="text-sm text-gray-500">42 篇文档</span>
+                        <span class="text-xs bg-summer/30 text-summer-deep px-3 py-1 rounded-full">占比 25%</span>
+                    </div>
+                </div>
 
+                <!-- 后端技术 -->
+                <div class="glass-card rounded-2xl p-6 transition-all hover:scale-105 hover:shadow-lg">
+                    <div class="category-icon bg-purple-500 mb-4">
+                        🖥️
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-1">后端技术</h3>
+                    <p class="text-sm text-gray-600 mb-4">Node.js、MySQL、接口设计</p>
+                    <div class="flex justify-between items-end">
+                        <span class="text-sm text-gray-500">35 篇文档</span>
+                        <span class="text-xs bg-summer/30 text-summer-deep px-3 py-1 rounded-full">占比 21%</span>
+                    </div>
+                </div>
+
+                <!-- 效率工具 -->
+                <div class="glass-card rounded-2xl p-6 transition-all hover:scale-105 hover:shadow-lg">
+                    <div class="category-icon bg-teal-500 mb-4">
+                        🔧
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-1">效率工具</h3>
+                    <p class="text-sm text-gray-600 mb-4">Git、VSCode、自动化脚本</p>
+                    <div class="flex justify-between items-end">
+                        <span class="text-sm text-gray-500">30 篇文档</span>
+                        <span class="text-xs bg-summer/30 text-summer-deep px-3 py-1 rounded-full">占比 18%</span>
+                    </div>
+                </div>
+
+                <!-- 读书笔记 -->
+                <div class="glass-card rounded-2xl p-6 transition-all hover:scale-105 hover:shadow-lg">
+                    <div class="category-icon bg-green-600 mb-4">
+                        📖
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-1">读书笔记</h3>
+                    <p class="text-sm text-gray-600 mb-4">编程书籍与学习摘录</p>
+                    <div class="flex justify-between items-end">
+                        <span class="text-sm text-gray-500">22 篇文档</span>
+                        <span class="text-xs bg-summer/30 text-summer-deep px-3 py-1 rounded-full">占比 13%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 第二行 3 个卡片（居中排布） -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                <!-- 项目笔记 -->
+                <div class="glass-card rounded-2xl p-6 transition-all hover:scale-105 hover:shadow-lg">
+                    <div class="category-icon bg-amber-600 mb-4">
+                        🔀
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-1">项目笔记</h3>
+                    <p class="text-sm text-gray-600 mb-4">项目复盘与架构整理</p>
+                    <div class="flex justify-between items-end">
+                        <span class="text-sm text-gray-500">18 篇文档</span>
+                        <span class="text-xs bg-summer/30 text-summer-deep px-3 py-1 rounded-full">占比 11%</span>
+                    </div>
+                </div>
+
+                <!-- AI 笔记 -->
+                <div class="glass-card rounded-2xl p-6 transition-all hover:scale-105 hover:shadow-lg">
+                    <div class="category-icon bg-rose-500 mb-4">
+                        🤖
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-1">AI 笔记</h3>
+                    <p class="text-sm text-gray-600 mb-4">AI 工具、Prompt 与实践</p>
+                    <div class="flex justify-between items-end">
+                        <span class="text-sm text-gray-500">14 篇文档</span>
+                        <span class="text-xs bg-summer/30 text-summer-deep px-3 py-1 rounded-full">占比 8%</span>
+                    </div>
+                </div>
+
+                <!-- 安全笔记 -->
+                <div class="glass-card rounded-2xl p-6 transition-all hover:scale-105 hover:shadow-lg">
+                    <div class="category-icon bg-blue-600 mb-4">
+                        🛡️
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-1">安全笔记</h3>
+                    <p class="text-sm text-gray-600 mb-4">网络安全与防护实践</p>
+                    <div class="flex justify-between items-end">
+                        <span class="text-sm text-gray-500">7 篇文档</span>
+                        <span class="text-xs bg-summer/30 text-summer-deep px-3 py-1 rounded-full">占比 4%</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
 </body>
 </html>
