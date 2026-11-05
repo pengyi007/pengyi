@@ -3,39 +3,48 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>DocMap · 知识地图笔记仓库</title>
+<title>DocMap · 知识地图 · 通天建木</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body {
     height: 100%;
     font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
-    background: #070b1a;
-    color: #e6edf7;
+    background: #081c22;
+    color: #e6f7f4;
     overflow: hidden;
   }
 
-  /* ============ 背景系统 ============ */
-  .bg-grid {
+  /* ========== 夏日通天建木背景 ========== */
+  .bg-tree {
     position: fixed; inset: 0;
     background:
-      radial-gradient(circle at 20% 20%, rgba(99,102,241,0.35), transparent 45%),
-      radial-gradient(circle at 80% 10%, rgba(139,92,246,0.35), transparent 50%),
-      radial-gradient(circle at 60% 90%, rgba(6,182,212,0.30), transparent 55%),
-      linear-gradient(180deg, #05070f 0%, #070b1a 45%, #0a0f22 100%);
+      radial-gradient(ellipse at 50% 10%, rgba(120,220,180,0.22), transparent 50%),
+      radial-gradient(ellipse at 20% 85%, rgba(70,180,210,0.18), transparent 45%),
+      radial-gradient(ellipse at 80% 88%, rgba(90,200,160,0.16), transparent 45%),
+      linear-gradient(180deg, #0b2b33 0%, #081c22 60%, #06161a 100%);
     z-index: 0;
   }
-  .bg-grid::before{
+  .bg-tree::before{
     content:"";
     position:absolute; inset:0;
     background-image:
-      linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
-    background-size: 42px 42px;
+      radial-gradient(circle at 50% 50%, rgba(140,230,200,0.06) 1px, transparent 1px);
+    background-size: 36px 36px;
     mask-image: radial-gradient(ellipse at center, black 40%, transparent 75%);
   }
+  /* 建木主干svg放在背景层 */
+  .tree-svg {
+    position: fixed;
+    inset:0;
+    width:100%;
+    height:100%;
+    z-index:1;
+    pointer-events:none;
+    opacity:0.75;
+  }
   .particles{
-    position:fixed; inset:0; z-index:1; pointer-events:none;
+    position:fixed; inset:0; z-index:2; pointer-events:none;
   }
 
   /* ============ 视图容器 ============ */
@@ -43,7 +52,7 @@
     position: relative;
     width: 100%;
     height: 100%;
-    z-index: 2;
+    z-index: 3;
   }
   .view{
     position: absolute;
@@ -72,25 +81,25 @@
     justify-content: center;
     text-align: center;
     padding: 40px 24px;
-    touch-action: none; /* 禁止浏览器默认滑动行为 */
+    touch-action: none;
   }
   .cover-mark{
     position: absolute;
     top: 24px; left: 24px;
     display:flex; align-items:center; gap:10px;
-    color: #9aa7c7;
+    color: #98c9c0;
     font-size: 14px;
   }
   .cover-mark .logo-dot{
     width:10px; height:10px; border-radius:50%;
-    background: linear-gradient(135deg,#6366f1,#06b6d4);
-    box-shadow: 0 0 18px rgba(99,102,241,0.8);
+    background: linear-gradient(135deg,#34d399,#22d3ee);
+    box-shadow: 0 0 18px rgba(52,211,153,0.7);
   }
   .cover-title{
     font-size: clamp(44px, 7vw, 96px);
     font-weight: 800;
     letter-spacing: 2px;
-    background: linear-gradient(120deg,#a5b4fc 0%,#c4b5fd 35%,#67e8f9 70%,#a5b4fc 100%);
+    background: linear-gradient(120deg,#a7f3d0 0%,#67e8f9 40%,#5eead4 80%,#a7f3d0 100%);
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
@@ -100,7 +109,7 @@
   }
   .cover-sub{
     font-size: clamp(14px, 1.4vw, 18px);
-    color: #9aa7c7;
+    color: #98c9c0;
     max-width: 640px;
     line-height: 1.8;
     margin-bottom: 40px;
@@ -110,24 +119,24 @@
     padding: 16px 34px;
     border-radius: 999px;
     border: 1px solid rgba(255,255,255,0.12);
-    background: linear-gradient(135deg, rgba(99,102,241,0.35), rgba(139,92,246,0.35));
+    background: linear-gradient(135deg, rgba(52,211,153,0.32), rgba(34,211,238,0.32));
     color: #fff;
     font-size: 15px;
     letter-spacing: 4px;
     backdrop-filter: blur(14px);
-    box-shadow: 0 10px 40px rgba(99,102,241,0.35);
+    box-shadow: 0 10px 40px rgba(52,211,153,0.3);
     transition: transform 0.4s ease, box-shadow 0.4s ease;
   }
   .cover-enter:hover{
     transform: translateY(-4px);
-    box-shadow: 0 18px 60px rgba(139,92,246,0.45);
+    box-shadow: 0 18px 60px rgba(34,211,238,0.42);
   }
   .cover-hint{
     position: absolute;
     bottom: 40px;
     left: 50%;
     transform: translateX(-50%);
-    color: #7f8cb0;
+    color: #74b8aa;
     font-size: 13px;
     letter-spacing: 2px;
     animation: bounce 2s infinite;
@@ -149,9 +158,9 @@
     justify-content: space-between;
     align-items: center;
     padding: 14px 24px;
-    background: rgba(7, 11, 26, 0.55);
+    background: rgba(8, 28, 34, 0.58);
     backdrop-filter: blur(14px);
-    border-bottom: 1px solid rgba(255,255,255,0.06);
+    border-bottom: 1px solid rgba(167,243,208,0.08);
   }
   .topbar-left, .topbar-right{
     display:flex; align-items:center; gap:14px;
@@ -162,19 +171,19 @@
     border-radius: 999px;
     border: 1px solid rgba(255,255,255,0.08);
     background: rgba(255,255,255,0.04);
-    color: #cbd5e1;
+    color: #b9eae0;
     font-size: 13px;
     transition: all 0.3s;
   }
   .back-btn:hover{
-    background: rgba(99,102,241,0.15);
-    border-color: rgba(99,102,241,0.4);
+    background: rgba(52,211,153,0.15);
+    border-color: rgba(52,211,153,0.4);
     color: #fff;
   }
   .topbar-title{
     font-size: 18px;
     font-weight: 700;
-    background: linear-gradient(120deg,#c7d2fe,#a5f3fc);
+    background: linear-gradient(120deg,#a7f3d0,#67e8f9);
     -webkit-background-clip:text;
     background-clip:text;
     color: transparent;
@@ -184,20 +193,20 @@
     border-radius: 12px;
     border: 1px solid rgba(255,255,255,0.08);
     background: rgba(255,255,255,0.04);
-    color: #cbd5e1;
+    color: #b9eae0;
     cursor: pointer;
     transition: all 0.3s;
   }
   .icon-btn:hover{
-    background: rgba(99,102,241,0.18);
+    background: rgba(52,211,153,0.18);
     color: #fff;
-    border-color: rgba(99,102,241,0.4);
+    border-color: rgba(52,211,153,0.4);
   }
 
-  /* ============ 地图页 ============ */
+  /* ============ 建木树形地图页【重点】 ============ */
   .map-page{ padding-bottom: 60px; }
   .map-header{
-    padding: 30px 24px 10px;
+    padding: 24px 24px 10px;
     display:flex; justify-content:space-between; align-items:flex-end;
     flex-wrap:wrap; gap:16px;
   }
@@ -207,92 +216,85 @@
     letter-spacing: 1px;
   }
   .map-title span{
-    background: linear-gradient(120deg,#a5b4fc,#67e8f9);
+    background: linear-gradient(120deg,#a7f3d0,#67e8f9);
     -webkit-background-clip:text;
     background-clip:text;
     color: transparent;
   }
   .map-desc{
-    color: #9aa7c7;
+    color: #98c9c0;
     margin-top: 8px;
     font-size: 14px;
   }
   .map-legend{
     display:flex; gap:10px; flex-wrap:wrap;
     background: rgba(255,255,255,0.04);
-    border: 1px solid rgba(255,255,255,0.08);
+    border: 1px solid rgba(167,243,208,0.08);
     padding: 10px 14px;
     border-radius: 14px;
     backdrop-filter: blur(12px);
   }
   .legend-item{
     display:flex; align-items:center; gap:8px;
-    font-size: 13px; color: #cbd5e1;
+    font-size: 13px; color: #b9eae0;
   }
   .legend-dot{
     width: 10px; height: 10px; border-radius: 4px;
   }
 
-  .map-grid{
+  /* 树形容器，代替原来网格 */
+  .tree-map-wrap{
     position: relative;
-    margin: 24px;
-    border-radius: 24px;
-    padding: 18px;
-    background:
-      radial-gradient(circle at 10% 0%, rgba(99,102,241,0.18), transparent 30%),
-      radial-gradient(circle at 100% 100%, rgba(6,182,212,0.18), transparent 30%),
-      rgba(255,255,255,0.03);
-    border: 1px solid rgba(255,255,255,0.06);
-    box-shadow: inset 0 0 60px rgba(99,102,241,0.08);
+    width: 100%;
+    min-height: 72vh;
+    padding: 30px 20px;
   }
-  .map-blocks{
-    display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    grid-auto-rows: 90px;
-    gap: 14px;
-  }
-  .map-block{
-    position: relative;
-    border-radius: 18px;
+  .tree-node{
+    position:absolute;
+    border-radius: 20px;
     padding: 18px;
     cursor: pointer;
     overflow: hidden;
     color: #fff;
-    border: 1px solid rgba(255,255,255,0.1);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    border: 1px solid rgba(255,255,255,0.12);
+    box-shadow: 0 10px 32px rgba(0,0,0,0.32);
     transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.4s ease;
-    display:flex; flex-direction:column; justify-content:space-between;
+    min-width:180px;
   }
-  .map-block::before{
+  .tree-node::before{
     content:"";
     position:absolute; inset:0;
-    background:
-      radial-gradient(circle at 0% 0%, rgba(255,255,255,0.22), transparent 40%),
-      radial-gradient(circle at 100% 100%, rgba(0,0,0,0.25), transparent 45%);
+    background: radial-gradient(circle at 0% 0%, rgba(255,255,255,0.22), transparent 40%);
     pointer-events:none;
   }
-  .map-block:hover{
-    transform: translateY(-8px) scale(1.015);
-    box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+  .tree-node:hover{
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 22px 50px rgba(0,0,0,0.45);
     border-color: rgba(255,255,255,0.25);
   }
-  .map-block .folder-name{
+  .tree-node .folder-name{
     font-size: 20px;
     font-weight: 800;
     letter-spacing: 1px;
     position: relative;
     z-index: 2;
   }
-  .map-block .folder-meta{
-    display:flex; justify-content:space-between; align-items:flex-end;
+  .tree-node .folder-desc{
+    font-size:13px;
+    opacity:0.85;
+    margin:8px 0 12px;
+    position:relative;z-index:2;
+  }
+  .tree-node .folder-meta{
+    display:flex; justify-content:space-between; align-items:center;
     position: relative;
     z-index: 2;
   }
-  .map-block .folder-count{
+  .tree-node .folder-count{
     font-size: 13px;
     opacity: 0.9;
   }
-  .map-block .folder-size{
+  .tree-node .folder-size{
     font-size: 12px;
     padding: 4px 10px;
     border-radius: 999px;
@@ -300,21 +302,14 @@
     backdrop-filter: blur(8px);
   }
 
-  /* 地图块面积比例 */
-  .block-large{ grid-column: span 5; grid-row: span 2; }
-  .block-big{ grid-column: span 4; grid-row: span 2; }
-  .block-mid{ grid-column: span 4; grid-row: span 1; }
-  .block-small{ grid-column: span 3; grid-row: span 1; }
-  .block-tiny{ grid-column: span 2; grid-row: span 1; }
-
-  /* 地图块配色 */
-  .block-indigo{ background: linear-gradient(135deg,#4f46e5,#7c3aed); }
-  .block-violet{ background: linear-gradient(135deg,#7c3aed,#a855f7); }
-  .block-cyan{ background: linear-gradient(135deg,#0891b2,#06b6d4); }
-  .block-emerald{ background: linear-gradient(135deg,#059669,#10b981); }
-  .block-amber{ background: linear-gradient(135deg,#d97706,#f59e0b); }
-  .block-rose{ background: linear-gradient(135deg,#e11d48,#f43f5e); }
-  .block-sky{ background: linear-gradient(135deg,#0284c7,#38bdf8); }
+  /* 节点配色，夏日清新 */
+  .node-indigo{ background: linear-gradient(135deg,#3b82f6,#8b5cf6); }
+  .node-violet{ background: linear-gradient(135deg,#8b5cf6,#a855f7); }
+  .node-cyan{ background: linear-gradient(135deg,#06b6d4,#22d3ee); }
+  .node-emerald{ background: linear-gradient(135deg,#10b981,#34d399); }
+  .node-amber{ background: linear-gradient(135deg,#f59e0b,#fbbf24); }
+  .node-rose{ background: linear-gradient(135deg,#f43f5e,#fb7185); }
+  .node-sky{ background: linear-gradient(135deg,#0ea5e9,#38bdf8); }
 
   /* ============ 书架页 ============ */
   .shelf-page{ padding-bottom: 60px; }
@@ -329,12 +324,12 @@
     letter-spacing: 1px;
   }
   .shelf-title span{
-    background: linear-gradient(120deg,#fcd34d,#f472b6);
+    background: linear-gradient(120deg,#a7f3d0,#67e8f9);
     -webkit-background-clip:text;
     background-clip:text;
     color: transparent;
   }
-  .shelf-desc{ color: #9aa7c7; margin-top: 6px; font-size: 14px; }
+  .shelf-desc{ color: #98c9c0; margin-top: 6px; font-size: 14px; }
   .shelf-tools{
     display:flex; gap:10px;
   }
@@ -346,8 +341,8 @@
     border-radius: 24px;
     background:
       linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02)),
-      rgba(10,15,34,0.6);
-    border: 1px solid rgba(255,255,255,0.06);
+      rgba(10,30,36,0.6);
+    border: 1px solid rgba(167,243,208,0.08);
     box-shadow: inset 0 0 40px rgba(0,0,0,0.35);
   }
   .shelf-row{
@@ -355,7 +350,7 @@
     gap: 18px;
     overflow-x: auto;
     padding: 14px 4px 20px;
-    border-bottom: 3px solid rgba(255,255,255,0.08);
+    border-bottom: 3px solid rgba(167,243,208,0.08);
     margin-bottom: 18px;
   }
   .shelf-row:last-child{ margin-bottom: 0; border-bottom: none; }
@@ -418,19 +413,19 @@
   }
   .book:hover .shine{ left: 130%; }
 
-  /* 书本封面配色 */
-  .book-1{ background: linear-gradient(160deg,#1e3a8a,#312e81,#4c1d95); }
-  .book-2{ background: linear-gradient(160deg,#0e7490,#155e75,#164e63); }
-  .book-3{ background: linear-gradient(160deg,#047857,#065f46,#064e3b); }
-  .book-4{ background: linear-gradient(160deg,#b45309,#92400e,#78350f); }
-  .book-5{ background: linear-gradient(160deg,#be123c,#9f1239,#881337); }
-  .book-6{ background: linear-gradient(160deg,#1d4ed8,#1e40af,#1e3a8a); }
-  .book-7{ background: linear-gradient(160deg,#6d28d9,#5b21b6,#4c1d95); }
-  .book-8{ background: linear-gradient(160deg,#0369a1,#075985,#0c4a6e); }
-  .book-9{ background: linear-gradient(160deg,#15803d,#166534,#14532d); }
-  .book-10{ background: linear-gradient(160deg,#a16207,#854d0e,#713f12); }
-  .book-11{ background: linear-gradient(160deg,#9f1239,#881337,#73122f); }
-  .book-12{ background: linear-gradient(160deg,#4338ca,#3730a3,#312e81); }
+  /* 书本封面配色 夏日清新 */
+  .book-1{ background: linear-gradient(160deg,#164e63,#155e75,#0891b2); }
+  .book-2{ background: linear-gradient(160deg,#065f46,#047857,#10b981); }
+  .book-3{ background: linear-gradient(160deg,#1e40af,#1d4ed8,#3b82f6); }
+  .book-4{ background: linear-gradient(160deg,#4c1d95,#5b21b6,#8b5cf6); }
+  .book-5{ background: linear-gradient(160deg,#9a3412,#b45309,#f59e0b); }
+  .book-6{ background: linear-gradient(160deg,#164e63,#155e75,#0891b2); }
+  .book-7{ background: linear-gradient(160deg,#065f46,#047857,#10b981); }
+  .book-8{ background: linear-gradient(160deg,#1e40af,#1d4ed8,#3b82f6); }
+  .book-9{ background: linear-gradient(160deg,#4c1d95,#5b21b6,#8b5cf6); }
+  .book-10{ background: linear-gradient(160deg,#9a3412,#b45309,#f59e0b); }
+  .book-11{ background: linear-gradient(160deg,#9f1239,#be123c,#f43f5e); }
+  .book-12{ background: linear-gradient(160deg,#0369a1,#0284c7,#0ea5e9); }
 
   /* ============ 阅读页 ============ */
   .reader-page{
@@ -441,11 +436,11 @@
   .reader-header{
     margin-bottom: 28px;
     padding-bottom: 20px;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+    border-bottom: 1px solid rgba(167,243,208,0.08);
   }
   .reader-category{
     font-size: 13px;
-    color: #9aa7c7;
+    color: #98c9c0;
     margin-bottom: 10px;
   }
   .reader-title{
@@ -453,27 +448,27 @@
     font-weight: 800;
     line-height: 1.3;
     margin-bottom: 14px;
-    background: linear-gradient(120deg,#fff,#c7d2fe);
+    background: linear-gradient(120deg,#fff,#a7f3d0);
     -webkit-background-clip:text;
     background-clip:text;
     color: transparent;
   }
   .reader-meta{
     display:flex; gap:16px; flex-wrap:wrap;
-    color: #9aa7c7;
+    color: #98c9c0;
     font-size: 13px;
   }
   .reader-content{
     font-size: 16px;
     line-height: 1.9;
-    color: #e2e8f0;
+    color: #d1f0e9;
   }
   .reader-content h2{
     margin: 34px 0 16px;
     font-size: 22px;
     color: #fff;
     padding-bottom: 10px;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
+    border-bottom: 1px solid rgba(167,243,208,0.08);
   }
   .reader-content p{ margin-bottom: 16px; }
   .reader-content code{
@@ -481,49 +476,58 @@
     padding: 2px 8px;
     border-radius: 6px;
     font-size: 14px;
-    color: #a5f3fc;
+    color: #5eead4;
   }
   .reader-content blockquote{
-    border-left: 4px solid #6366f1;
+    border-left: 4px solid #34d399;
     padding: 14px 18px;
-    background: rgba(99,102,241,0.12);
+    background: rgba(52,211,153,0.12);
     border-radius: 0 12px 12px 0;
     margin: 20px 0;
-    color: #cbd5e1;
+    color: #b9eae0;
   }
 
   /* ============ 滚动条 ============ */
   ::-webkit-scrollbar{ width: 10px; height: 10px; }
   ::-webkit-scrollbar-thumb{
-    background: rgba(255,255,255,0.12);
+    background: rgba(167,243,208,0.16);
     border-radius: 10px;
   }
-  ::-webkit-scrollbar-thumb:hover{ background: rgba(255,255,255,0.22); }
+  ::-webkit-scrollbar-thumb:hover{ background: rgba(167,243,208,0.28); }
   ::-webkit-scrollbar-track{ background: transparent; }
 
   /* ============ 响应式 ============ */
   @media (max-width: 900px){
-    .map-blocks{ grid-template-columns: repeat(6, 1fr); }
-    .block-large{ grid-column: span 6; grid-row: span 2; }
-    .block-big{ grid-column: span 6; grid-row: span 1; }
-    .block-mid{ grid-column: span 4; grid-row: span 1; }
-    .block-small{ grid-column: span 3; grid-row: span 1; }
-    .block-tiny{ grid-column: span 2; grid-row: span 1; }
+    .tree-node{ position:relative !important; display:block; margin:16px auto; max-width:340px; left:unset !important; top:unset !important; }
     .book{ flex: 0 0 140px; height: 210px; }
   }
   @media (max-width: 600px){
-    .map-blocks{ grid-template-columns: repeat(4, 1fr); }
-    .block-large, .block-big{ grid-column: span 4; }
-    .block-mid{ grid-column: span 4; }
-    .block-small{ grid-column: span 2; }
-    .block-tiny{ grid-column: span 2; }
     .book{ flex: 0 0 120px; height: 190px; }
   }
 </style>
 </head>
 <body>
 
-<div class="bg-grid"></div>
+<div class="bg-tree"></div>
+<!-- 通天建木主干SVG -->
+<svg class="tree-svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <!-- 主干 -->
+  <path d="M960 1080 C960 800, 940 550, 960 320 C980 140, 960 40, 960 0" fill="none" stroke="#34d399" stroke-width="14" stroke-linecap="round" opacity="0.35"/>
+  <!-- 分支 -->
+  <path d="M960 760 C820 740, 700 660, 620 560" fill="none" stroke="#22d3ee" stroke-width="7" stroke-linecap="round" opacity="0.28"/>
+  <path d="M960 620 C1100 600, 1240 530, 1340 440" fill="none" stroke="#22d3ee" stroke-width="7" stroke-linecap="round" opacity="0.28"/>
+  <path d="M960 500 C840 480, 740 400, 660 310" fill="none" stroke="#34d399" stroke-width="6" stroke-linecap="round" opacity="0.26"/>
+  <path d="M960 400 C1080 380, 1180 310, 1260 230" fill="none" stroke="#34d399" stroke-width="6" stroke-linecap="round" opacity="0.26"/>
+  <path d="M960 300 C870 280, 790 210, 720 130" fill="none" stroke="#5eead4" stroke-width="5" stroke-linecap="round" opacity="0.24"/>
+  <path d="M960 220 C1040 200, 1120 140, 1180 70" fill="none" stroke="#5eead4" stroke-width="5" stroke-linecap="round" opacity="0.24"/>
+  <!-- 叶子光点 -->
+  <circle cx="620" cy="560" r="4" fill="#5eead4" opacity="0.7"/>
+  <circle cx="1340" cy="440" r="4" fill="#5eead4" opacity="0.7"/>
+  <circle cx="660" cy="310" r="3.5" fill="#34d399" opacity="0.7"/>
+  <circle cx="1260" cy="230" r="3.5" fill="#34d399" opacity="0.7"/>
+  <circle cx="720" cy="130" r="3" fill="#22d3ee" opacity="0.7"/>
+  <circle cx="1180" cy="70" r="3" fill="#22d3ee" opacity="0.7"/>
+</svg>
 <canvas class="particles" id="particles"></canvas>
 
 <div class="stage" id="stage">
@@ -532,23 +536,23 @@
   <section class="view cover" id="coverView">
     <div class="cover-mark">
       <span class="logo-dot"></span>
-      <span>DocMap Knowledge Repository</span>
+      <span>DocMap · 通天建木知识库</span>
     </div>
-    <h1 class="cover-title">DocMap · 知识地图</h1>
+    <h1 class="cover-title">DocMap · 通天建木</h1>
     <p class="cover-sub">
-      把笔记仓库变成一张可探索的地图。<br>
-      按容量浏览文件夹，像翻书一样打开每一篇文档。
+      知识如同建木，主干扎根，枝桠生长，每一片枝叶都是你的笔记。<br>
+      沿着枝干探索，翻开属于你的夏日知识库。
     </p>
-    <button class="cover-enter" onclick="enterMap()">进入知识地图 →</button>
-    <div class="cover-hint">上滑进入主界面</div>
+    <button class="cover-enter" onclick="enterMap()">进入建木地图 →</button>
+    <div class="cover-hint">上滑进入建木主界面</div>
   </section>
 
-  <!-- ========== 地图层 ========== -->
+  <!-- ========== 建木树形地图层 ========== -->
   <section class="view map-page hidden-up" id="mapView">
     <div class="topbar">
       <div class="topbar-left">
         <button class="back-btn" onclick="backToCover()">← 返回封面</button>
-        <div class="topbar-title">DocMap · 知识地图</div>
+        <div class="topbar-title">DocMap · 通天建木</div>
       </div>
       <div class="topbar-right">
         <button class="icon-btn" title="搜索"><i class="fas fa-search"></i></button>
@@ -558,14 +562,14 @@
 
     <div class="map-header">
       <div>
-        <div class="map-title">我的 <span>知识地图</span></div>
-        <div class="map-desc">文件夹按容量占比显示，点击地图块进入书架</div>
+        <div class="map-title">我的 <span>建木知识地图</span></div>
+        <div class="map-desc">知识沿着建木枝干生长，点击枝叶节点进入书架</div>
       </div>
       <div class="map-legend" id="mapLegend"></div>
     </div>
 
-    <div class="map-grid">
-      <div class="map-blocks" id="mapBlocks"></div>
+    <div class="tree-map-wrap" id="treeWrap">
+      <!-- JS 动态生成树形节点，定位在枝干末端 -->
     </div>
   </section>
 
@@ -573,7 +577,7 @@
   <section class="view shelf-page hidden-up" id="shelfView">
     <div class="topbar">
       <div class="topbar-left">
-        <button class="back-btn" onclick="backToMap()">← 返回地图</button>
+        <button class="back-btn" onclick="backToMap()">← 返回建木地图</button>
         <div class="topbar-title" id="shelfTopTitle">书架</div>
       </div>
       <div class="topbar-right">
@@ -584,7 +588,7 @@
 
     <div class="shelf-header">
       <div>
-        <div class="shelf-title"><span id="shelfFolderName">前端开发</span> · 书架</div>
+        <div class="shelf-title"><span id="shelfFolderName">前端开发</span> · 枝叶书架</div>
         <div class="shelf-desc" id="shelfFolderDesc">按更新时间陈列文档，点击书本打开阅读</div>
       </div>
       <div class="shelf-tools">
@@ -626,18 +630,18 @@
 
 <script>
   // ========== 当前页面状态 ==========
-  let currentView = 'cover'; // cover / map / shelf / reader
-  let isAnimating = false;   // 动画锁，防止连续触发
+  let currentView = 'cover';
+  let isAnimating = false;
 
   // ========== 模拟数据 ==========
   const folders = [
-    { id: "frontend", name: "前端开发", desc: "HTML、CSS、JavaScript 与框架笔记", size: 42, color: "block-indigo", legend: "前端开发" },
-    { id: "backend", name: "后端技术", desc: "Node.js、MySQL、接口设计", size: 35, color: "block-violet", legend: "后端技术" },
-    { id: "tool", name: "效率工具", desc: "Git、VSCode、自动化脚本", size: 28, color: "block-cyan", legend: "效率工具" },
-    { id: "book", name: "读书笔记", desc: "编程书籍与学习摘录", size: 23, color: "block-emerald", legend: "读书笔记" },
-    { id: "project", name: "项目笔记", desc: "项目复盘与架构整理", size: 18, color: "block-amber", legend: "项目笔记" },
-    { id: "ai", name: "AI 笔记", desc: "AI 工具、Prompt 与实践", size: 14, color: "block-rose", legend: "AI 笔记" },
-    { id: "sec", name: "安全笔记", desc: "前端安全与权限管理", size: 9, color: "block-sky", legend: "安全笔记" }
+    { id: "frontend", name: "前端开发", desc: "HTML、CSS、JavaScript 与框架笔记", size: 42, color: "node-indigo", legend: "前端开发", pos:{left:"14%", top:"42%"} },
+    { id: "backend", name: "后端技术", desc: "Node.js、MySQL、接口设计", size: 35, color: "node-violet", legend: "后端技术", pos:{left:"74%", top:"34%"} },
+    { id: "tool", name: "效率工具", desc: "Git、VSCode、自动化脚本", size: 28, color: "node-cyan", legend: "效率工具", pos:{left:"20%", top:"58%"} },
+    { id: "book", name: "读书笔记", desc: "编程书籍与学习摘录", size: 23, color: "node-emerald", legend: "读书笔记", pos:{left:"70%", top:"52%"} },
+    { id: "project", name: "项目笔记", desc: "项目复盘与架构整理", size: 18, color: "node-amber", legend: "项目笔记", pos:{left:"26%", top:"24%"} },
+    { id: "ai", name: "AI 笔记", desc: "AI 工具、Prompt 与实践", size: 14, color: "node-rose", legend: "AI 笔记", pos:{left:"64%", top:"20%"} },
+    { id: "sec", name: "安全笔记", desc: "前端安全与权限管理", size: 9, color: "node-sky", legend: "安全笔记", pos:{left:"42%", top:"16%"} }
   ];
 
   const docs = {
@@ -740,28 +744,16 @@
     ]
   };
 
-  // ========== 渲染地图 ==========
+  // ========== 渲染建木树形节点 ==========
   function renderMap(){
-    const blocks = document.getElementById("mapBlocks");
+    const wrap = document.getElementById("treeWrap");
     const legend = document.getElementById("mapLegend");
     const sorted = [...folders].sort((a,b)=> b.size - a.size);
 
-    sorted.forEach((f, i)=>{
-      if(i === 0) f.level = "block-large";
-      else if(i === 1) f.level = "block-big";
-      else if(i === 2) f.level = "block-mid";
-      else if(i === 3) f.level = "block-mid";
-      else if(i === 4) f.level = "block-small";
-      else if(i === 5) f.level = "block-small";
-      else f.level = "block-tiny";
-    });
-
-    blocks.innerHTML = sorted.map(f => `
-      <div class="map-block ${f.color} ${f.level}" onclick="openShelf('${f.id}')">
-        <div>
-          <div class="folder-name">${f.name}</div>
-          <div style="font-size:13px;opacity:0.85;margin-top:8px;position:relative;z-index:2;">${f.desc}</div>
-        </div>
+    wrap.innerHTML = sorted.map(f => `
+      <div class="tree-node ${f.color}" style="left:${f.pos.left};top:${f.pos.top}" onclick="openShelf('${f.id}')">
+        <div class="folder-name">${f.name}</div>
+        <div class="folder-desc">${f.desc}</div>
         <div class="folder-meta">
           <div class="folder-count">${f.size} 篇文档</div>
           <div class="folder-size">容量占比 ${getPercent(f.size)}%</div>
@@ -771,7 +763,7 @@
 
     legend.innerHTML = sorted.map(f => `
       <div class="legend-item">
-        <span class="legend-dot" style="background:linear-gradient(135deg,#6366f1,#a855f7);"></span>
+        <span class="legend-dot" style="background:linear-gradient(135deg,#34d399,#22d3ee);"></span>
         <span>${f.legend} · ${f.size}篇</span>
       </div>
     `).join("");
@@ -789,7 +781,7 @@
 
     document.getElementById("shelfFolderName").textContent = folder.name;
     document.getElementById("shelfFolderDesc").textContent = folder.desc + "，共 " + list.length + " 篇文档";
-    document.getElementById("shelfTopTitle").textContent = folder.name + " · 书架";
+    document.getElementById("shelfTopTitle").textContent = folder.name + " · 枝叶书架";
 
     const rows = [];
     for(let i = 0; i < list.length; i += 6){
@@ -828,7 +820,7 @@
     document.getElementById("readerContent").innerHTML = doc.content;
   }
 
-  // ========== 视图切换（带防抖锁） ==========
+  // ========== 视图切换 ==========
   function enterMap(){
     if(isAnimating || currentView !== 'cover') return;
     isAnimating = true;
@@ -898,43 +890,36 @@
     setTimeout(()=> isAnimating = false, 900);
   }
 
-  // ========== 核心修复：上滑交互 ==========
+  // ========== 滑动交互（保留上滑功能） ==========
   let touchStartY = 0;
   let touchEndY = 0;
-  const SWIPE_THRESHOLD = 60; // 滑动阈值，像素
+  const SWIPE_THRESHOLD = 60;
 
-  // 触摸开始
   document.addEventListener('touchstart', (e) => {
     touchStartY = e.touches[0].clientY;
   }, { passive: true });
 
-  // 触摸结束
   document.addEventListener('touchend', (e) => {
     touchEndY = e.changedTouches[0].clientY;
     handleSwipe();
   }, { passive: true });
 
-  // 鼠标滚轮（桌面端）
   document.addEventListener('wheel', (e) => {
-    // 只在封面页响应滚轮上滑进入
     if(currentView === 'cover' && e.deltaY > 10){
       enterMap();
     }
-    // 在地图页，滚轮下滑到顶部后继续下滑，返回封面
     if(currentView === 'map'){
       const mapEl = document.getElementById('mapView');
       if(mapEl.scrollTop <= 0 && e.deltaY < -10){
         backToCover();
       }
     }
-    // 在书架页，顶部继续下滑返回地图
     if(currentView === 'shelf'){
       const shelfEl = document.getElementById('shelfView');
       if(shelfEl.scrollTop <= 0 && e.deltaY < -10){
         backToMap();
       }
     }
-    // 在阅读页，顶部继续下滑返回书架
     if(currentView === 'reader'){
       const readerEl = document.getElementById('readerView');
       if(readerEl.scrollTop <= 0 && e.deltaY < -10){
@@ -943,20 +928,14 @@
     }
   }, { passive: true });
 
-  // 处理滑动手势
   function handleSwipe(){
-    const diff = touchStartY - touchEndY; // 正数=上滑，负数=下滑
-
-    // 滑动距离不够，不触发
+    const diff = touchStartY - touchEndY;
     if(Math.abs(diff) < SWIPE_THRESHOLD) return;
 
-    // 封面页：上滑进入地图
     if(currentView === 'cover' && diff > 0){
       enterMap();
       return;
     }
-
-    // 地图页：下滑返回封面
     if(currentView === 'map'){
       const mapEl = document.getElementById('mapView');
       if(mapEl.scrollTop <= 0 && diff < 0){
@@ -964,8 +943,6 @@
         return;
       }
     }
-
-    // 书架页：下滑返回地图
     if(currentView === 'shelf'){
       const shelfEl = document.getElementById('shelfView');
       if(shelfEl.scrollTop <= 0 && diff < 0){
@@ -973,8 +950,6 @@
         return;
       }
     }
-
-    // 阅读页：下滑返回书架
     if(currentView === 'reader'){
       const readerEl = document.getElementById('readerView');
       if(readerEl.scrollTop <= 0 && diff < 0){
@@ -984,7 +959,7 @@
     }
   }
 
-  // ========== 粒子背景 ==========
+  // ========== 夏日粒子（淡青绿色光点） ==========
   function initParticles(){
     const canvas = document.getElementById("particles");
     const ctx = canvas.getContext("2d");
@@ -997,13 +972,13 @@
     resize();
     addEventListener("resize", resize);
 
-    particles = Array.from({length: 60}, ()=> ({
+    particles = Array.from({length: 55}, ()=> ({
       x: Math.random()*w,
       y: Math.random()*h,
-      r: Math.random()*1.6 + 0.4,
-      vx: (Math.random()-0.5)*0.25,
-      vy: (Math.random()-0.5)*0.25,
-      a: Math.random()*0.6 + 0.2
+      r: Math.random()*1.5 + 0.35,
+      vx: (Math.random()-0.5)*0.22,
+      vy: (Math.random()-0.5)*0.22,
+      a: Math.random()*0.5 + 0.2
     }));
 
     function draw(){
@@ -1014,7 +989,7 @@
         if(p.y < 0 || p.y > h) p.vy *= -1;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-        ctx.fillStyle = `rgba(165,180,252,${p.a})`;
+        ctx.fillStyle = `rgba(94,234,212,${p.a})`;
         ctx.fill();
       });
 
@@ -1023,12 +998,12 @@
           const dx = particles[i].x - particles[j].x;
           const dy = particles[i].y - particles[j].y;
           const d = Math.hypot(dx, dy);
-          if(d < 110){
+          if(d < 100){
             ctx.beginPath();
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);
-            ctx.strokeStyle = `rgba(165,180,252,${0.18 * (1 - d/110)})`;
-            ctx.lineWidth = 0.6;
+            ctx.strokeStyle = `rgba(94,234,212,${0.14 * (1 - d/100)})`;
+            ctx.lineWidth = 0.5;
             ctx.stroke();
           }
         }
