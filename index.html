@@ -111,16 +111,28 @@ main{ position:relative; z-index:1; }
   gap:12px; max-width:100%;
 }
 .metric{
-  padding:16px 18px; border-radius:16px;
+  display:flex; align-items:center; gap:13px;
+  padding:15px 17px; border-radius:16px;
   background:var(--glass); -webkit-backdrop-filter:blur(14px) saturate(1.1); backdrop-filter:blur(14px) saturate(1.1);
   border:1px solid rgba(255,255,255,.9); box-shadow:var(--shadow-soft);
 }
+.metric-ic{
+  flex:0 0 38px; width:38px; height:38px; border-radius:11px;
+  display:grid; place-items:center; color:#fff;
+  box-shadow:0 4px 10px rgba(45,90,60,.16);
+}
+.metric-ic svg{ width:20px; height:20px; }
+.ic-1 .metric-ic{ background:linear-gradient(135deg,#43A04F,#2F7D3C); }
+.ic-2 .metric-ic{ background:linear-gradient(135deg,#4CA6DC,#2E7FB8); }
+.ic-3 .metric-ic{ background:linear-gradient(135deg,#5BBE8E,#2E9B6E); }
+.ic-4 .metric-ic{ background:linear-gradient(135deg,#E8B54A,#D99A3C); }
+.metric-tx{ display:flex; flex-direction:column; gap:3px; min-width:0; }
 .metric b{
-  display:block; font-family:var(--font-num); font-size:26px; font-weight:700;
+  display:block; font-family:var(--font-num); font-size:25px; font-weight:700;
   line-height:1.1; color:var(--green-700); font-variant-numeric:tabular-nums;
 }
-.metric b.is-date{ font-family:var(--font-sans); font-size:19px; font-weight:700; }
-.metric span{ display:block; margin-top:6px; font-size:11.5px; color:var(--ink-400); }
+.metric b.is-date{ font-family:var(--font-sans); font-size:18px; font-weight:700; }
+.metric span{ display:block; font-size:11.5px; color:var(--ink-400); }
 .metric.is-loading b{ color:var(--ink-300); }
 
 /* ---------- 区块头 ---------- */
@@ -412,9 +424,11 @@ svg.leaf{ display:inline-block; vertical-align:middle; width:11px; height:9px; m
   .section-head{ flex-wrap:wrap; align-items:flex-start; gap:12px; margin:30px 0 16px; }
   .btn-refresh{ flex:0 0 auto; }
   .hero-metrics{ gap:10px; }
-  .metric{ padding:14px 14px; }
-  .metric b{ font-size:22px; }
-  .metric b.is-date{ font-size:16px; }
+  .metric{ padding:12px 13px; gap:11px; }
+  .metric-ic{ flex-basis:32px; width:32px; height:32px; border-radius:9px; }
+  .metric-ic svg{ width:17px; height:17px; }
+  .metric b{ font-size:21px; }
+  .metric b.is-date{ font-size:15px; }
   .hero-desc{ font-size:13px; }
   .footer-inner{ font-size:12px; gap:10px; }
   .keep-learning{ display:none; }
@@ -500,6 +514,7 @@ svg.leaf{ display:inline-block; vertical-align:middle; width:11px; height:9px; m
     <g id="i-image" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m4 17 5-5 3 3 3-3 5 5"/></g>
     <g id="i-doc" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6Z"/><path d="M14 3v4h4"/><path d="M9 11h6 M9 15h5"/></g>
     <g id="i-open" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h14v14H5Z"/><path d="M9 9h6v6H9Z"/></g>
+    <g id="i-cal" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18 M8 3v4 M16 3v4"/></g>
   </defs>
 </svg>
 
@@ -567,10 +582,22 @@ svg.leaf{ display:inline-block; vertical-align:middle; width:11px; height:9px; m
     </p>
     <p class="hero-desc">两个公开仓库，内容实时读取自 GitHub。笔记、配图与目录结构全部由仓库驱动——无需后端，也不必手动维护页面；往仓库里提交文件，这里就会自动更新。</p>
     <div class="hero-metrics" id="heroMetrics">
-      <div class="metric is-loading"><b id="mRepos">2</b><span>公开仓库</span></div>
-      <div class="metric is-loading"><b id="mNotes">—</b><span>笔记文档</span></div>
-      <div class="metric is-loading"><b id="mImages">—</b><span>配图资源</span></div>
-      <div class="metric is-loading"><b id="mUpdated" class="is-date">—</b><span>最近更新</span></div>
+      <div class="metric is-loading ic-1">
+        <span class="metric-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-folder"/></svg></span>
+        <div class="metric-tx"><b id="mRepos">2</b><span>公开仓库</span></div>
+      </div>
+      <div class="metric is-loading ic-2">
+        <span class="metric-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-doc"/></svg></span>
+        <div class="metric-tx"><b id="mNotes">—</b><span>笔记文档</span></div>
+      </div>
+      <div class="metric is-loading ic-3">
+        <span class="metric-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-image"/></svg></span>
+        <div class="metric-tx"><b id="mImages">—</b><span>配图资源</span></div>
+      </div>
+      <div class="metric is-loading ic-4">
+        <span class="metric-ic" aria-hidden="true"><svg viewBox="0 0 24 24"><use href="#i-cal"/></svg></span>
+        <div class="metric-tx"><b id="mUpdated" class="is-date">—</b><span>最近更新</span></div>
+      </div>
     </div>
   </section>
 
